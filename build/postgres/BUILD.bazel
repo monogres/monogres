@@ -1,0 +1,41 @@
+load("@rules_foreign_cc//foreign_cc:configure.bzl", "configure_make")
+
+configure_make(
+    name = "postgres",
+    args = select({
+        "@platforms//os:linux": ["-j$(nproc)"],
+        "//conditions:default": [],
+    }),
+    configure_in_place = True,
+    configure_options = [
+        "--disable-rpath",
+        "--without-icu",
+        "--without-readline",
+        "--without-zlib",
+    ],
+    lib_source = "@pg_src--16.0",
+    out_binaries = [
+        "initdb",
+        "postgres",
+        "pg_config",
+        "pg_isready",
+    ],
+    # NOTE: including lib in out_data_dirs because even when it's
+    # out_lib_dir's default, it's not included in declared_outputs
+    out_data_dirs = [
+        "lib",
+        "share",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+# NOTE:
+# This target is useful for debugging. On failure, rules_foreign_cc does print
+# the path to the compilation log and the wrapper scripts but it can also be
+# useful to access these after a successful compilation (plus it gives a nicer
+# path to access the logs and a simple way to access it, just bazel build it).
+filegroup(
+    name = "logs",
+    srcs = [":postgres"],
+    output_group = "Configure_logs",
+)

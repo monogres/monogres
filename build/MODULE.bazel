@@ -6,3 +6,39 @@ module(
     # https://bazel.build/external/faq#incrementing-compatibility-level
     compatibility_level = 0,
 )
+
+bazel_dep(name = "platforms", version = "1.0.0")
+bazel_dep(name = "rules_foreign_cc", version = "0.14.0")
+
+# postgres/
+http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+BUILD_REPO = """
+filegroup(
+    name = "files",
+    srcs = glob(["**"]),
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "{name}",
+    actual = ":files",
+    visibility = ["//visibility:public"],
+)
+"""
+
+NAME = "pg_src--16.0"
+
+TAG = "REL_16_0"
+
+URL = "https://github.com/postgres/postgres/archive/refs/tags/{}.tar.gz".format(TAG)
+
+SHA256 = "f3ffaa5cbeefd3a6d426423e1001d01e543841946e5b13d4c8ebcad4434f2be8"
+
+http_archive(
+    name = NAME,
+    build_file_content = BUILD_REPO.format(name = NAME),
+    sha256 = SHA256,
+    strip_prefix = "postgres-{}".format(TAG),
+    url = URL,
+)

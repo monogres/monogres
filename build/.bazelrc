@@ -20,6 +20,9 @@ build --nobuild_runfile_links
 build --noexperimental_action_cache_store_output_metadata
 build --experimental_guard_against_concurrent_changes
 
+build --action_env=CC=gcc
+build --action_env=CXX=g++
+
 # Build Event Service (BES):
 # build events can be uploaded to services like BuildBuddy to get
 # a nice UI and a URL that you can share with others to debug or
