@@ -1,0 +1,43 @@
+# /* vim: set filetype=sh : */
+
+common --show_timestamps
+common --progress_in_terminal_title
+common --incompatible_disallow_empty_glob
+common --attempt_to_print_relative_paths
+common --check_direct_dependencies=off
+common --keep_going
+
+common:debug --announce_rc
+common:debug --experimental_ui_max_stdouterr_bytes=52428800
+common:debug --nokeep_going
+
+build --nostamp
+build --incompatible_strict_action_env
+build --reuse_sandbox_directories
+build --incompatible_default_to_explicit_init_py
+build --nolegacy_external_runfiles
+build --nobuild_runfile_links
+build --noexperimental_action_cache_store_output_metadata
+build --experimental_guard_against_concurrent_changes
+
+# Build Event Service (BES):
+# build events can be uploaded to services like BuildBuddy to get
+# a nice UI and a URL that you can share with others to debug or
+# review the results of a build.
+# https://bazel.build/remote/bep#build-event-service
+build:bes-buildbuddy --bes_results_url=https://app.buildbuddy.io/invocation/
+build:bes-buildbuddy --bes_backend=grpcs://remote.buildbuddy.io
+build:bes-buildbuddy --bes_upload_mode=nowait_for_upload_complete
+
+build:debug --config=bes-buildbuddy
+build:debug --show_result=9999
+build:debug --verbose_failures
+build:debug --verbose_explanations
+build:debug --explain=/tmp/verbose_explanations
+build:debug --sandbox_debug
+build:debug --subcommands
+
+# custom bazelrc where each user can add their customizations and/or
+# e.g. authentication parts that shouldn't be committed to the repo.
+# see .bazelrc.user.tmpl for a sample template you can use
+try-import .bazelrc.user

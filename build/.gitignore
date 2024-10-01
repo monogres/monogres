@@ -1,0 +1,10 @@
+# Ignore all bazel-* symlinks. Globbing because the workspace name can change
+# depending on the name of the directory bazel is cloned into.
+bazel-*
+
+# ignoring MODULE.bazel.lock for the time being
+# see https://github.com/bazelbuild/bazel/issues/20369
+MODULE.bazel.lock
+
+# ignore the user's Bazel config
+.bazelrc.user

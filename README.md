@@ -75,9 +75,19 @@ The long-term goal is for these patches to be upstreamed. Once that happens,
 this mirror will no longer be needed for future Postgres versions but it will
 remain available to support reproducible builds of older releases.
 
+## 💡 Contributing
+
+Please feel free to open [issues] and [PRs], contributions are always welcome!
+See [CONTRIBUTING.md] and [build/README.md] for more info on how to work with
+this repo.
+
 [Apache 2 License]: https://www.apache.org/licenses/LICENSE-2.0
+[build/README.md]: build/README.md
+[CONTRIBUTING.md]: CONTRIBUTING.md
+[issues]: ../../issues
 [monogres/postgres]: https://github.com/monogres/postgres
 [PG-version branches]: https://github.com/monogres/postgres/branches/all?query=monogres
 [PostgreSQL]: https://postgresql.org
+[PRs]: ../../pulls
 [Reproducible Builds]: https://reproducible-builds.org
 [supply chain attacks]: https://en.wikipedia.org/wiki/Supply_chain_attack

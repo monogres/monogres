@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+: "${BAZEL_REAL:?BAZEL_REAL must be set in the environment}"
+
+"${BAZEL_REAL}" "$@"
+STATUS="$?"
+
+GREEN="\033[0;32m"
+NOCOLOR="\033[0m"
+
+if [[ " $* " =~ " test " ]] && [[ "${STATUS}" -eq 4 ]]; then
+    echo -e "${GREEN}INFO:${NOCOLOR} ignoring 'no test targets found' error"
+    exit 0
+fi
+
+exit "${STATUS}"

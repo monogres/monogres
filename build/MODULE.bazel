@@ -1,0 +1,8 @@
+module(
+    name = "monogres",
+    # https://bazel.build/external/faq#module-versioning-best-practices
+    version = "",
+    bazel_compatibility = [">=7.3.1"],
+    # https://bazel.build/external/faq#incrementing-compatibility-level
+    compatibility_level = 0,
+)

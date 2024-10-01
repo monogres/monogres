@@ -1,0 +1,13 @@
+# NOTE:
+# check attributes with:
+# git ls-files | git check-attr --stdin --all | column -t
+
+# .bazelrc are mostly a collection of the CLI arguments, so highlighting them
+# as shell scripts looks quite alright and makes them quite readable
+.bazelrc* linguist-language=Shell
+
+# Github Linguist has a policy of "popularity" for inclusion (200+ unique
+# non-fork user/repo) and, sadly, so far the MODULE.bazel include files
+# have a rather minimal footprint:
+# https://github.com/search?type=code&q=NOT+is%3Afork+path%3A*.MODULE.bazel
+*.MODULE.bazel linguist-language=Starlark

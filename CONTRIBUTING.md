@@ -21,6 +21,16 @@ commit.
 Note that there's also a GH Actions that will run the checks when submitting
 PRs and when pushing to any branch except the `wip/*` branches.
 
+### 🧱 Building
+
+This project is built with [Bazel]. You can build everything and run all the
+tests in the repo with:
+
+```sh
+cd build && bazel test //...
+```
+
+[Bazel]: https://bazel.build
 [issues]: ../../issues
 [`pre-commit`]: https://pre-commit.com
 [PRs]: ../../pulls

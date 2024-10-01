@@ -62,3 +62,25 @@ repos:
         args: [--config, .ruff.toml, --fix]
       - id: ruff-format
         args: [--config, .ruff.toml]
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.10.0.1
+    hooks:
+      - id: shellcheck
+        args: [--enable=all]
+  - repo: https://github.com/keith/pre-commit-buildifier
+    rev: 7.3.1.1
+    hooks:
+      - id: buildifier
+        args: &args
+          - --warnings=all
+      - id: buildifier-lint
+        args: *args
+  - repo: local
+    hooks:
+      - id: bazel-test
+        name: bazel-test
+        entry: cd build && bazel test //...
+        language: system
+        pass_filenames: false
+        verbose: false
+        stages: [manual]
