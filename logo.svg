@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   version="1.0"
+   width="640pt"
+   height="640pt"
+   viewBox="0 0 640 640"
+   preserveAspectRatio="xMidYMid meet"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   id="logo"
+>
+  <g id="M">
+<polygon
+    style="fill: #666; stroke: #666; stroke-width: 0; stroke-linecap: round; stroke-linejoin: round"
+    points="580.345753903295,470.31198621562635 580.345753903295,70.31198621562635 320,220 320,320 493.56383593552994,220 493.56383593552994,520"
+    id="M_BODY_R"
+ />
+<polygon
+    style="fill: #999; stroke: #999; stroke-width: 0; stroke-linecap: round; stroke-linejoin: round"
+    points="406.78191796776497,270.31198621562635 493.56383593552994,220 493.56383593552994,420 406.78191796776497,370.31198621562635"
+    id="M_LEG_R"
+ />
+<polygon
+    style="fill: #ccc; stroke: #ccc; stroke-width: 0; stroke-linecap: round; stroke-linejoin: round"
+    points="580.345753903295,70.31198621562635 406.78191796776497,170.31198621562632 320,120.62397243125265 493.56383593553,20.623972431252675"
+    id="M_ROOF_R"
+ />
+<polygon
+    style="fill: #326791; stroke: #326791; stroke-width: 0; stroke-linecap: round; stroke-linejoin: round"
+    points="59.65424609670505,470.31198621562635 59.65424609670505,70.31198621562635 320,220 320,320 146.43616406447003,220 146.43616406447003,520"
+    id="M_BODY_L"
+ />
+<polygon
+    style="fill: #1e3250; stroke: #1e3250; stroke-width: 0; stroke-linecap: round; stroke-linejoin: round"
+    points="233.21808203223503,270.31198621562635 146.43616406447003,220 146.43616406447003,420 233.21808203223503,370.31198621562635"
+    id="M_LEG_L"
+ />
+<polygon
+    style="fill: #689FCA; stroke: #689FCA; stroke-width: 0; stroke-linecap: round; stroke-linejoin: round"
+    points="59.65424609670505,70.31198621562635 320,220 406.78191796776497,170.31198621562632 146.43616406447003,20.623972431252675"
+    id="M_ROOF_L"
+ />
+<polygon
+    style="fill: #1e3250; stroke: #1e3250; stroke-width: 0; stroke-linecap: round; stroke-linejoin: round"
+    points="320,320 320,220 406.78191796776497,170.31198621562632 406.78191796776497,270.31198621562635"
+    id="M_ROOF_FRONT"
+ />
+</g>
+<g id="cubes">
+<polygon
+    style="fill: #76D276; stroke: #76D276; stroke-width: 0; stroke-linecap: round; stroke-linejoin: round"
+    points="320,420 233.21808203223503,370.31198621562635 146.43616406447003,420 233.21808203223503,469.68801378437365"
+    id="CB1"
+ />
+<polygon
+    style="fill: #42A047; stroke: #42A047; stroke-width: 0; stroke-linecap: round; stroke-linejoin: round"
+    points="320,420 233.21808203223503,469.68801378437365 320,520 406.78191796776497,469.68801378437365"
+    id="CB2"
+ />
+<polygon
+    style="fill: #76D276; stroke: #76D276; stroke-width: 0; stroke-linecap: round; stroke-linejoin: round"
+    points="320,420 406.78191796776497,469.68801378437365 493.56383593552994,420 406.78191796776497,370.31198621562635"
+    id="CB3"
+ />
+<polygon
+    style="fill: #42A047; stroke: #42A047; stroke-width: 0; stroke-linecap: round; stroke-linejoin: round"
+    points="146.43616406447003,420 233.21808203223503,469.68801378437365 233.21808203223503,569.6880137843737 146.43616406447003,520"
+    id="CB4"
+ />
+<polygon
+    style="fill: #42A047; stroke: #42A047; stroke-width: 0; stroke-linecap: round; stroke-linejoin: round"
+    points="493.56383593552994,420 406.78191796776497,469.68801378437365 406.78191796776497,569.6880137843737 493.56383593552994,520"
+    id="CB5"
+ />
+<polygon
+    style="fill: #00701A; stroke: #00701A; stroke-width: 0; stroke-linecap: round; stroke-linejoin: round"
+    points="233.21808203223503,469.68801378437365 233.21808203223503,569.6880137843737 320,620 320,520"
+    id="CB6"
+ />
+<polygon
+    style="fill: #014300; stroke: #014300; stroke-width: 0; stroke-linecap: round; stroke-linejoin: round"
+    points="406.78191796776497,469.68801378437365 406.78191796776497,569.6880137843737 320,620 320,520"
+    id="CB7"
+ />
+<polygon
+    style="fill: #00701A; stroke: #00701A; stroke-width: 0; stroke-linecap: round; stroke-linejoin: round"
+    points="320,420 233.21808203223503,370.31198621562635 320,320 406.78191796776497,370.31198621562635"
+    id="CB8"
+ />
+</g>
+</svg>
