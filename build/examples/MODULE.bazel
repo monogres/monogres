@@ -1,0 +1,10 @@
+module(
+    name = "examples",
+    bazel_compatibility = [">=7.1.0"],
+)
+
+bazel_dep(name = "monogres", version = "", dev_dependency = True)
+local_path_override(
+    module_name = "monogres",
+    path = "..",
+)

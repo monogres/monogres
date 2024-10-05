@@ -1,0 +1,5 @@
+"""e2e testing"""
+
+load(":test.bzl", "build_test")
+
+build_test(name = "postgres")
