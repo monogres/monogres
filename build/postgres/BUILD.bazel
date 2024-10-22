@@ -1,7 +1,24 @@
 load("@rules_foreign_cc//foreign_cc:configure.bzl", "configure_make")
+load("@rules_foreign_cc//foreign_cc:meson.bzl", "meson")
+
+PG_BINARIES = [
+    "initdb",
+    "postgres",
+    "pg_config",
+    "pg_isready",
+]
+
+# NOTE: including lib in out_data_dirs because even when it's
+# out_lib_dir's default, it's not included in declared_outputs
+OUT_DATA_DIRS = [
+    "lib",
+    "share",
+]
+
+PG_SRC = "@pg_src--16.0"
 
 configure_make(
-    name = "postgres",
+    name = "cm",
     args = select({
         "@platforms//os:linux": ["-j$(nproc)"],
         "//conditions:default": [],
@@ -13,19 +30,29 @@ configure_make(
         "--without-readline",
         "--without-zlib",
     ],
-    lib_source = "@pg_src--16.0",
-    out_binaries = [
-        "initdb",
-        "postgres",
-        "pg_config",
-        "pg_isready",
-    ],
-    # NOTE: including lib in out_data_dirs because even when it's
-    # out_lib_dir's default, it's not included in declared_outputs
-    out_data_dirs = [
-        "lib",
-        "share",
-    ],
+    lib_source = PG_SRC,
+    out_binaries = PG_BINARIES,
+    out_data_dirs = OUT_DATA_DIRS,
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "cm--logs",
+    srcs = [":cm"],
+    output_group = "Configure_logs",
+)
+
+meson(
+    name = "meson",
+    lib_source = PG_SRC,
+    options = {
+        "icu": "disabled",
+        "readline": "disabled",
+        "rpath": "false",
+        "zlib": "disabled",
+    },
+    out_binaries = PG_BINARIES,
+    out_data_dirs = OUT_DATA_DIRS,
     visibility = ["//visibility:public"],
 )
 
@@ -35,7 +62,17 @@ configure_make(
 # useful to access these after a successful compilation (plus it gives a nicer
 # path to access the logs and a simple way to access it, just bazel build it).
 filegroup(
+    name = "meson--logs",
+    srcs = [":meson"],
+    output_group = "Meson_logs",
+)
+
+alias(
+    name = "postgres",
+    actual = "meson",
+)
+
+alias(
     name = "logs",
-    srcs = [":postgres"],
-    output_group = "Configure_logs",
+    actual = "meson--logs",
 )

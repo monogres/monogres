@@ -2,4 +2,6 @@
 
 load(":test.bzl", "build_test")
 
-build_test(name = "postgres")
+build_test(name = "cm")
+
+build_test(name = "meson")
