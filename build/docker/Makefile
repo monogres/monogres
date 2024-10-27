@@ -31,8 +31,8 @@ REPRODUCIBLE_CONTAINERS_VERSION ?= 0.1.4
 BAZELISK_VERSION ?= 1.20.0
 
 DEPS_CC_TOOLCHAIN = \
-	gcc \
-	g++ \
+	llvm-14 clang-14 lld-14 \
+	libclang-rt-14-dev libc++-14-dev libc++abi-14-dev \
 	libc6-dev
 
 all:

@@ -4,7 +4,25 @@ module(
 )
 
 bazel_dep(name = "monogres", version = "", dev_dependency = True)
+bazel_dep(name = "toolchains_llvm", version = "1.4.0", dev_dependency = True)
+
 local_path_override(
     module_name = "monogres",
     path = "..",
+)
+
+llvm = use_extension("@toolchains_llvm//toolchain/extensions:llvm.bzl", "llvm", dev_dependency = True)
+llvm.toolchain(
+    name = "llvm_toolchain_system",
+    llvm_version = "14.0.6",
+)
+llvm.toolchain_root(
+    name = "llvm_toolchain_system",
+    path = "/usr/lib/llvm-14",
+)
+use_repo(llvm, "llvm_toolchain_system")
+
+register_toolchains(
+    "@llvm_toolchain_system//:all",
+    dev_dependency = True,
 )

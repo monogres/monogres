@@ -19,9 +19,8 @@ build --nolegacy_external_runfiles
 build --nobuild_runfile_links
 build --noexperimental_action_cache_store_output_metadata
 build --experimental_guard_against_concurrent_changes
-
-build --action_env=CC=gcc
-build --action_env=CXX=g++
+build --repo_env=BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=1
+build --action_env=BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=1
 
 # Build Event Service (BES):
 # build events can be uploaded to services like BuildBuddy to get
