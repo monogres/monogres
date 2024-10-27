@@ -5,7 +5,13 @@ extensions.
 
 ## 🧱 Building
 
-You can build everything in the repo with:
+First, run a local RBE container with:
+
+```sh
+make -C docker run-image
+```
+
+Then, you can build everything in the repo with:
 
 ```sh
 bazel build //...

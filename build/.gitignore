@@ -8,3 +8,6 @@ MODULE.bazel.lock
 
 # ignore the user's Bazel config
 .bazelrc.user
+
+# ignore the "Makefile locks"
+/docker/.*Dockerfile

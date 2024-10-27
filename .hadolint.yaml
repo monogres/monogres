@@ -1,0 +1,12 @@
+ignored:
+  # warning: Pin versions in apt get install
+  # https://github.com/hadolint/hadolint/wiki/DL3008
+  # we ignore this because we are installing packages from snapshots
+  - DL3008
+override:
+  style:
+    # We intentionally use different RUN layers to optimize caching, using
+    # heredocs to group all of the commands per layer, etc.
+    # https://github.com/hadolint/hadolint/wiki/DL3059#drawbacks
+    # https://github.com/hadolint/hadolint/issues/715
+    - DL3059
