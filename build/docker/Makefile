@@ -19,6 +19,7 @@ GH_REPO_URL := https://github.com/$(GH_ORG)/$(PROJECT_NAME)
 TAG := $(REGISTRY)/$(GH_ORG)/$(IMAGE_NAME):latest
 
 ARCH ?= $(shell uname -m)
+USERNAME ?= postgres
 
 BASE_IMAGE=debian
 # https://hub.docker.com/_/debian/tags
@@ -78,6 +79,8 @@ gen-image: .$(DOCKER_TARGET).Dockerfile
 		--build-arg BAZELISK_VERSION="$(BAZELISK_VERSION)" \
 		--build-arg BAZEL_VERSION="$(BAZEL_VERSION)" \
 		--build-arg DEPS_CC_TOOLCHAIN="$(DEPS_CC_TOOLCHAIN)" \
+		--build-arg USERNAME="$(USERNAME)" \
+		--build-arg HOMEDIR="/$(USERNAME)" \
 		--label org.opencontainers.image.source="$(GH_REPO_URL)" \
 		--target "$(DOCKER_TARGET)" \
 		--tag "$(IMAGE_NAME)" \

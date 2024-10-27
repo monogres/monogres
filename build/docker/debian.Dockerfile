@@ -53,13 +53,44 @@ $APT_INSTALL
 apt_install git
 EOF
 
+# allow to create a non-root user
+# (rules_python notoriously fails when running as root)
+ARG USERNAME=nonroot
+ARG HOMEDIR=/home/$USERNAME
+
+ENV USERNAME=$USERNAME
+ENV HOMEDIR=$HOMEDIR
+
+RUN /bin/bash <<EOF
+set -euxo pipefail
+
+[[ "$USERNAME" != "root" ]] && useradd \
+    --comment 'Non-root User' \
+    --create-home --home-dir "$HOMEDIR" \
+    --shell /bin/bash \
+    $USERNAME
+EOF
+
+USER $USERNAME
+
 # install bazel: running bazel --version triggers Bazelisk to download Bazel
 ARG BAZEL_VERSION
 ARG USE_BAZEL_VERSION=$BAZEL_VERSION
+
+USER root
 RUN /usr/bin/bazel --version
+
+USER $USERNAME
+RUN /bin/bash <<EOF
+set -euxo pipefail
+
+[[ "$USERNAME" != "root" ]] && /usr/bin/bazel --version
+EOF
 
 
 FROM debian AS debian-rbe
+
+USER root
 
 ARG DEPS_CC_TOOLCHAIN
 ENV DEPS_CC_TOOLCHAIN="$DEPS_CC_TOOLCHAIN"
@@ -70,7 +101,12 @@ $APT_INSTALL
 apt_install $DEPS_CC_TOOLCHAIN
 EOF
 
+USER $USERNAME
+
+
 FROM debian-rbe AS debian-debug
+
+USER root
 
 # install other tools
 RUN /bin/bash <<EOF
@@ -84,24 +120,28 @@ $APT_INSTALL
 apt_install bash-completion
 EOF
 
+USER $USERNAME
+
 RUN /bin/bash <<EOF
 set -euxo pipefail
 
-cat <<EOT >> ~/.bashrc
+if [[ "$(whoami)" == "root" ]]; then
+    cat <<EOT >> ~/.bashrc
 
 if [ -f /etc/bash_completion ]; then
     . /etc/bash_completion
 fi
 
 EOT
+fi
 EOF
 
-WORKDIR /root/.local/share/bazel-completion
+WORKDIR $HOMEDIR/.local/share/bazel-completion
 
 # setup bazel autocompletion
-ADD \
+ADD --chown=$USERNAME:$USERNAME \
     https://raw.githubusercontent.com/bazelbuild/bazel/$BAZEL_VERSION/scripts/bazel-complete-header.bash .
-ADD \
+ADD --chown=$USERNAME:$USERNAME \
     https://raw.githubusercontent.com/bazelbuild/bazel/$BAZEL_VERSION/scripts/bazel-complete-template.bash .
 
 RUN /bin/bash <<EOF
@@ -120,5 +160,7 @@ EOF
 RUN /bin/bash <<EOF
 set -euxo pipefail
 
-echo -e '\nalias ls="ls --color=auto"' >> ~/.bashrc
+if [[ "$(whoami)" == "root" ]]; then
+    echo -e '\nalias ls="ls --color=auto"' >> ~/.bashrc
+fi
 EOF
