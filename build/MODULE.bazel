@@ -8,7 +8,11 @@ module(
 )
 
 bazel_dep(name = "platforms", version = "1.0.0")
+bazel_dep(name = "rules_bison", version = "0.4")
+bazel_dep(name = "rules_flex", version = "0.4")
 bazel_dep(name = "rules_foreign_cc", version = "0.14.0")
+bazel_dep(name = "rules_m4", version = "0.3")
+bazel_dep(name = "rules_python", version = "1.0.0")
 
 bazel_dep(name = "toolchains_llvm", version = "1.4.0", dev_dependency = True)
 
@@ -28,6 +32,36 @@ register_toolchains(
     "@llvm_toolchain_system//:all",
     dev_dependency = True,
 )
+
+bison = use_extension(
+    "@rules_bison//bison/extensions:bison_repository_ext.bzl",
+    "bison_repository_ext",
+)
+bison.repository(
+    name = "bison",
+    version = "3.3.2",
+)
+use_repo(bison, "bison")
+
+flex = use_extension("@rules_flex//flex/extensions:flex_repository_ext.bzl", "flex_repository_ext")
+flex.repository(
+    name = "flex",
+    version = "2.6.4",
+)
+use_repo(flex, "flex")
+
+m4 = use_extension("@rules_m4//m4/extensions:m4_repository_ext.bzl", "m4_repository_ext")
+m4.repository(
+    name = "m4",
+    version = "1.4.18",
+)
+use_repo(m4, "m4")
+
+python = use_extension("@rules_python//python/extensions:python.bzl", "python")
+python.toolchain(
+    python_version = "3.11",
+)
+use_repo(python, "python_3_11")
 
 # postgres/
 http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
@@ -57,6 +91,14 @@ SHA256 = "f3ffaa5cbeefd3a6d426423e1001d01e543841946e5b13d4c8ebcad4434f2be8"
 http_archive(
     name = NAME,
     build_file_content = BUILD_REPO.format(name = NAME),
+    patch_args = ["-p1"],
+    patches = [
+        "//postgres/patches:0001-16.0-fix-pgflex-propagate-environment-to-flex-subprocess.patch",
+        "//postgres/patches:0002-16.0-fix-pgflex-suppress-line-directives.patch",
+        "//postgres/patches:0003-16.0-fix-pgflex-flex-2.6.4-noline-bugs.patch",
+        "//postgres/patches:0004-16.0-feat-prefix_distro-option.patch",
+        "//postgres/patches:0005-16.0-hack-remove-execroot-from-CC.patch",
+    ],
     sha256 = SHA256,
     strip_prefix = "postgres-{}".format(TAG),
     url = URL,

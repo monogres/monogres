@@ -1,0 +1,35 @@
+From 30e01eb9904d09daf87b63e3690f6f886e1a119f Mon Sep 17 00:00:00 2001
+From: Javier Maestro <jjmaestro@ieee.org>
+Date: Mon, 30 Sep 2024 21:14:06 +0100
+Subject: [PATCH 3/5] fix: pgflex - flex <= 2.6.4 noline bugs
+
+Flex has bugs where --noline doesn't suppress all the line directives
+(e.g. https://github.com/westes/flex/pull/704) so, until it's accepted,
+we filter them on our side.
+---
+ src/tools/pgflex | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+diff --git a/src/tools/pgflex b/src/tools/pgflex
+index 65cc92c26d9..494fd2e685a 100755
+--- a/src/tools/pgflex
++++ b/src/tools/pgflex
+@@ -84,4 +84,15 @@ if args.fix_warnings:
+     if sp.returncode != 0:
+         sys.exit(sp.returncode)
+ 
++# fix flex <= 2.6.4 --noline bugs (e.g. https://github.com/westes/flex/pull/704)
++import re
++
++RE_LINE_DIRECTIVE = re.compile(r'#line \d+ ".*"')
++
++with open(args.output_file) as f:
++    output_lines = f.readlines()
++
++with open(args.output_file, "w") as f:
++    f.writelines(l for l in output_lines if not RE_LINE_DIRECTIVE.match(l))
++
+ sys.exit(0)
+-- 
+2.39.5 (Apple Git-154)
+

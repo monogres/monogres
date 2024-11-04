@@ -1,0 +1,84 @@
+From 1d0c1eb4e74e34d33cf38eee69759555eb603380 Mon Sep 17 00:00:00 2001
+From: Javier Maestro <jjmaestro@ieee.org>
+Date: Tue, 1 Oct 2024 11:14:26 +0100
+Subject: [PATCH 4/5] feat: prefix_distro option
+
+Add prefix_distro option to select a "distro prefix", a path different
+from prefix where Postgres will be installed.
+
+Useful if the distro install path will be different from the install
+path at build time, and for reproducible builds since Postgres embeds
+all of the pg_config.h paths in all the binaries.
+---
+ meson.build             |  5 +++++
+ meson_options.txt       |  2 ++
+ src/include/meson.build | 24 ++++++++++++------------
+ 3 files changed, 19 insertions(+), 12 deletions(-)
+
+diff --git a/meson.build b/meson.build
+index 38e4f03e602..65af743d7b9 100644
+--- a/meson.build
++++ b/meson.build
+@@ -471,6 +471,11 @@ endif
+ pkg = 'postgresql'
+ 
+ dir_prefix = get_option('prefix')
++dir_prefix_distro = get_option('prefix_distro')
++
++if dir_prefix_distro == ''
++  dir_prefix_distro = dir_prefix
++endif
+ 
+ dir_prefix_contains_pg = (dir_prefix.contains('pgsql') or dir_prefix.contains('postgres'))
+ 
+diff --git a/meson_options.txt b/meson_options.txt
+index d2f95cfec36..1ca1e164962 100644
+--- a/meson_options.txt
++++ b/meson_options.txt
+@@ -70,6 +70,8 @@ option('darwin_sysroot', type: 'string', value: '',
+ option('rpath', type: 'boolean', value: true,
+   description: 'Embed shared library search path in executables')
+ 
++option('prefix_distro', type: 'string', value: '',
++  description: 'Select a "distro prefix" (a path different from prefix where Postgres will be installed). Useful if the distro install path will be different from the install path at build time.')
+ 
+ # External dependencies
+ 
+diff --git a/src/include/meson.build b/src/include/meson.build
+index d7e1ecd4c96..f01440f97cf 100644
+--- a/src/include/meson.build
++++ b/src/include/meson.build
+@@ -28,18 +28,18 @@ configure_files += pg_config
+ 
+ 
+ config_paths_data = configuration_data()
+-config_paths_data.set_quoted('PGBINDIR', dir_prefix / dir_bin)
+-config_paths_data.set_quoted('PGSHAREDIR', dir_prefix / dir_data)
+-config_paths_data.set_quoted('SYSCONFDIR', dir_prefix / dir_sysconf)
+-config_paths_data.set_quoted('INCLUDEDIR', dir_prefix / dir_include)
+-config_paths_data.set_quoted('PKGINCLUDEDIR', dir_prefix / dir_include_pkg)
+-config_paths_data.set_quoted('INCLUDEDIRSERVER', dir_prefix / dir_include_server)
+-config_paths_data.set_quoted('LIBDIR', dir_prefix / dir_lib)
+-config_paths_data.set_quoted('PKGLIBDIR', dir_prefix / dir_lib_pkg)
+-config_paths_data.set_quoted('LOCALEDIR', dir_prefix / dir_locale)
+-config_paths_data.set_quoted('DOCDIR', dir_prefix / dir_doc)
+-config_paths_data.set_quoted('HTMLDIR', dir_prefix / dir_doc_html)
+-config_paths_data.set_quoted('MANDIR', dir_prefix / dir_man)
++config_paths_data.set_quoted('PGBINDIR', dir_prefix_distro / dir_bin)
++config_paths_data.set_quoted('PGSHAREDIR', dir_prefix_distro / dir_data)
++config_paths_data.set_quoted('SYSCONFDIR', dir_prefix_distro / dir_sysconf)
++config_paths_data.set_quoted('INCLUDEDIR', dir_prefix_distro / dir_include)
++config_paths_data.set_quoted('PKGINCLUDEDIR', dir_prefix_distro / dir_include_pkg)
++config_paths_data.set_quoted('INCLUDEDIRSERVER', dir_prefix_distro / dir_include_server)
++config_paths_data.set_quoted('LIBDIR', dir_prefix_distro / dir_lib)
++config_paths_data.set_quoted('PKGLIBDIR', dir_prefix_distro / dir_lib_pkg)
++config_paths_data.set_quoted('LOCALEDIR', dir_prefix_distro / dir_locale)
++config_paths_data.set_quoted('DOCDIR', dir_prefix_distro / dir_doc)
++config_paths_data.set_quoted('HTMLDIR', dir_prefix_distro / dir_doc_html)
++config_paths_data.set_quoted('MANDIR', dir_prefix_distro / dir_man)
+ 
+ 
+ var_cc = ' '.join(cc.cmd_array())
+-- 
+2.39.5 (Apple Git-154)
+

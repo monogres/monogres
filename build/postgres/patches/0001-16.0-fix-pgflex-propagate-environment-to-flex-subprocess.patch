@@ -1,0 +1,45 @@
+From b1ce4eb039a27987a6e894ec9d24e9fc4cd6f11d Mon Sep 17 00:00:00 2001
+From: Javier Maestro <jjmaestro@ieee.org>
+Date: Wed, 28 May 2025 18:51:00 +0100
+Subject: [PATCH 1/5] fix: pgflex - propagate environment to flex subprocess
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Python's subprocess.run docs say that if the env argument is not None,
+it will be used "instead of the default behavior of inheriting the
+current process’ environment".
+
+However, the environment should be preserved, only adding FLEX_TMP_DIR
+to it. For more info, see the following thread:
+
+https://www.postgresql.org/message-id/ot4w2y6es446gjgvhbpp45qt3wx65n5epjxgsu3ghgr63yuizn%40qeurkcofswmv
+---
+ src/tools/pgflex | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/tools/pgflex b/src/tools/pgflex
+index baabe2df1c8..b3d2632c1bc 100755
+--- a/src/tools/pgflex
++++ b/src/tools/pgflex
+@@ -51,7 +51,7 @@ os.chdir(args.privatedir)
+ # contents. Set FLEX_TMP_DIR to the target private directory to avoid
+ # that. That environment variable isn't consulted on other platforms, so we
+ # don't even need to make this conditional.
+-env = {'FLEX_TMP_DIR': args.privatedir}
++os.environ['FLEX_TMP_DIR'] = args.privatedir
+ 
+ # build flex invocation
+ command = [args.flex, '-o', args.output_file]
+@@ -61,7 +61,7 @@ command += args.flex_flags
+ command += [args.input_file]
+ 
+ # create .c file from .l file
+-sp = subprocess.run(command, env=env)
++sp = subprocess.run(command)
+ if sp.returncode != 0:
+     sys.exit(sp.returncode)
+ 
+-- 
+2.39.5 (Apple Git-154)
+
