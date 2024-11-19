@@ -1,7 +1,6 @@
 """e2e testing"""
 
+load("@monogres//postgres:cfg.bzl", "CFG")
 load(":test.bzl", "build_test")
 
-build_test(name = "cm")
-
-build_test(name = "meson")
+build_test(name = CFG.name)
