@@ -1,0 +1,29 @@
+From ab3eaf28172ebaffb6442c952148d6c69c05acba Mon Sep 17 00:00:00 2001
+From: Javier Maestro <jjmaestro@ieee.org>
+Date: Tue, 1 Oct 2024 18:55:17 +0100
+Subject: [PATCH 5/5] hack: remove execroot from CC
+
+Postgres embeds other info via pg_config.h that makes the build not
+reproducible. Since we build in Bazel, we replace the execroot path with
+a constant placeholder.
+---
+ src/include/meson.build | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/src/include/meson.build b/src/include/meson.build
+index e6578452a25..a9674cddc26 100644
+--- a/src/include/meson.build
++++ b/src/include/meson.build
+@@ -43,6 +43,9 @@ config_paths_data.set_quoted('MANDIR', dir_prefix_distro / dir_man)
+ 
+ 
+ var_cc = ' '.join(cc.cmd_array())
++if 'execroot/' in var_cc
++  var_cc = '<EXECROOT>/' + var_cc.split('execroot/')[1]
++endif
+ var_cpp = ' '.join(cc.cmd_array() + ['-E'])
+ var_cflags = ' '.join(cflags + cflags_builtin + cflags_warn + get_option('c_args'))
+ if llvm.found()
+-- 
+2.39.5 (Apple Git-154)
+

@@ -131,3 +131,33 @@ def pg_build(name, pg_src, build_options):
         srcs = [name],
         output_group = "Meson_logs",
     )
+
+def pg_build_all(name, cfg):
+    """
+    Defines Bazel targets for building all configured Postgres versions.
+
+    This macro calls `pg_build` for every version listed in the Postgres config
+    struct, and creates aliases for the default version.
+
+    Args:
+        name (str): The base name for the default target (e.g. "postgres").
+        cfg (struct): A Postgres config struct (see `cfg.new(...)`).
+    """
+    for target in cfg.targets:
+        pg_build(
+            name = target.name,
+            pg_src = target.pg_src,
+            build_options = target.build_options,
+        )
+
+    native.alias(
+        name = name,
+        actual = cfg.default.name,
+        visibility = ["//visibility:public"],
+    )
+
+    native.alias(
+        name = "{}--logs".format(name),
+        actual = "{}--logs".format(cfg.default.name),
+        visibility = ["//visibility:public"],
+    )

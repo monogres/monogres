@@ -7,3 +7,7 @@ def build_test(name):
         name = name,
         target = "@monogres//postgres:%s" % name,
     )
+
+def build_all_test(name, cfg):
+    for target in cfg.targets:
+        build_test(target.name)

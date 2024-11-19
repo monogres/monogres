@@ -1,8 +1,7 @@
 load(":cfg.bzl", "CFG")
-load(":pg_build.bzl", "pg_build")
+load(":pg_build.bzl", "pg_build_all")
 
-pg_build(
+pg_build_all(
     name = CFG.name,
-    build_options = CFG.build_options,
-    pg_src = CFG.pg_src,
+    cfg = CFG,
 )
