@@ -2,14 +2,7 @@
 Postgres build configuration.
 """
 
-REPO_NAME = "pg_src"
-
-VERSIONS = [
-    "17.0",
-    "16.0",
-]
-
-DEFAULT_VERSION = VERSIONS[0]
+load("@pg_src//:repo.bzl", "DEFAULT_VERSION", "REPO_NAME", "VERSIONS")
 
 # NOTE:
 # Postgres embeds the install paths via a generated pg_config.h that uses the
@@ -58,7 +51,7 @@ def _target(name, version, repo_name, prefix_distro):
         name = "~".join((name, version)),
         version = version,
         build_options = build_options,
-        pg_src = "@%s--%s" % (repo_name, version),
+        pg_src = "@%s//%s" % (repo_name, version),
     )
 
 def _new(name, versions, repo_name, prefix_distro):

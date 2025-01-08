@@ -7,11 +7,13 @@ module(
     compatibility_level = 0,
 )
 
+bazel_dep(name = "download_archives", version = "0.1.0")
 bazel_dep(name = "rules_bison", version = "0.4")
 bazel_dep(name = "rules_flex", version = "0.4")
 bazel_dep(name = "rules_foreign_cc", version = "0.14.0")
 bazel_dep(name = "rules_m4", version = "0.3")
 bazel_dep(name = "rules_python", version = "1.0.0")
+bazel_dep(name = "version_utils", version = "0.1.0")
 
 bazel_dep(name = "toolchains_llvm", version = "1.4.0", dev_dependency = True)
 
@@ -63,66 +65,18 @@ python.toolchain(
 use_repo(python, "python_3_11")
 
 # postgres/
-http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+download_archives = use_repo_rule("@download_archives//download/archives:defs.bzl", "download_archives")
 
-BUILD_REPO = """
-filegroup(
-    name = "files",
-    srcs = glob(["**"]),
-    visibility = ["//visibility:public"],
+download_archives(
+    name = "pg_src",
+    index = "//postgres:repo.json",
+    patches = {
+        "//postgres/patches:0001-16.0-fix-pgflex-propagate-environment-to-flex-subprocess.patch": "*",
+        "//postgres/patches:0002-16.0-fix-pgflex-suppress-line-directives.patch": "*",
+        "//postgres/patches:0003-16.0-fix-pgflex-flex-2.6.4-noline-bugs.patch": "*",
+        "//postgres/patches:0004-16.0-feat-prefix_distro-option.patch": "*",
+        "//postgres/patches:0005-16.0-hack-remove-execroot-from-CC.patch": "16.0/*",
+        "//postgres/patches:0005-17.0-hack-remove-execroot-from-CC.patch": "17.0/*",
+    },
+    version_scheme = "pgver",
 )
-
-alias(
-    name = "{name}",
-    actual = ":files",
-    visibility = ["//visibility:public"],
-)
-"""
-
-PG_SRCS = dict([
-    (
-        "17.0",
-        dict(
-            SHA256 = "9a4b01944f9749e90e28b58e3c8556d900b68e3eef02ee509284d5312831787d",
-            TAG = "REL_17_0",
-        ),
-    ),
-    (
-        "16.0",
-        dict(
-            SHA256 = "f3ffaa5cbeefd3a6d426423e1001d01e543841946e5b13d4c8ebcad4434f2be8",
-            TAG = "REL_16_0",
-        ),
-    ),
-])
-
-PG_SRC_PATCHES_COMMON = [
-    "//postgres/patches:0001-16.0-fix-pgflex-propagate-environment-to-flex-subprocess.patch",
-    "//postgres/patches:0002-16.0-fix-pgflex-suppress-line-directives.patch",
-    "//postgres/patches:0003-16.0-fix-pgflex-flex-2.6.4-noline-bugs.patch",
-    "//postgres/patches:0004-16.0-feat-prefix_distro-option.patch",
-]
-
-PG_SRC_PATCHES = {
-    "16.0": PG_SRC_PATCHES_COMMON + [
-        "//postgres/patches:0005-16.0-hack-remove-execroot-from-CC.patch",
-    ],
-    "17.0": PG_SRC_PATCHES_COMMON + [
-        "//postgres/patches:0005-17.0-hack-remove-execroot-from-CC.patch",
-    ],
-}
-
-PG_SRC_URL = "https://github.com/postgres/postgres/archive/refs/tags/{}.tar.gz"
-
-[
-    http_archive(
-        name = "pg_src--%s" % version,
-        build_file_content = BUILD_REPO.format(name = "pg_src--%s" % version),
-        patch_args = ["-p1"],
-        patches = PG_SRC_PATCHES[version],
-        sha256 = PG_SRCS[version]["SHA256"],
-        strip_prefix = "postgres-{}".format(PG_SRCS[version]["TAG"]),
-        url = PG_SRC_URL.format(PG_SRCS[version]["TAG"]),
-    )
-    for version in PG_SRCS.keys()[0:]
-]

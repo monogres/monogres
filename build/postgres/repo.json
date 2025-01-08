@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "sources": {
+    "gh": {
+      "owner": "postgres",
+      "repo": "postgres",
+      "filename": "{tag}",
+      "url": "https://github.com/{owner}/{repo}/archive/refs/tags/{filename}.tar.gz",
+      "strip_prefix": "{repo}-{tag}"
+    }
+  },
+  "versions": {
+    "17.0": {
+      "tag": "REL_17_0",
+      "sha256": "9a4b01944f9749e90e28b58e3c8556d900b68e3eef02ee509284d5312831787d"
+    },
+    "16.0": {
+      "tag": "REL_16_0",
+      "sha256": "f3ffaa5cbeefd3a6d426423e1001d01e543841946e5b13d4c8ebcad4434f2be8"
+    }
+  }
+}
