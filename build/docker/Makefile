@@ -9,7 +9,7 @@ endif
 
 DOCKERFILE := debian
 BASE_NAME := debian
-TARGET ?= rbe
+TARGET ?= rbe-pgdeps
 DOCKER_TARGET := $(if $(TARGET),$(BASE_NAME)-$(TARGET),$(BASE_NAME))
 IMAGE_NAME := $(PROJECT_NAME)/$(DOCKER_TARGET)
 
@@ -35,6 +35,30 @@ DEPS_CC_TOOLCHAIN = \
 	llvm-14 clang-14 lld-14 \
 	libclang-rt-14-dev libc++-14-dev libc++abi-14-dev \
 	libc6-dev
+
+DEPS_POSTGRES = \
+	gettext \
+	libavahi-compat-libdnssd-dev \
+	libedit-dev \
+	libeditreadline-dev \
+	libicu-dev \
+	libkrb5-dev \
+	libldap-dev \
+	liblz4-dev \
+	libossp-uuid-dev \
+	libpam0g-dev \
+	libperl-dev \
+	libpython3-dev \
+	libselinux1-dev \
+	libssl-dev \
+	libsystemd-dev \
+	libxml2-dev \
+	libxslt1-dev \
+	libzstd-dev \
+	llvm-14-dev \
+	tcl-dev \
+	uuid-dev \
+	zlib1g-dev
 
 all:
 	@echo $(REPO)
@@ -79,6 +103,7 @@ gen-image: .$(DOCKER_TARGET).Dockerfile
 		--build-arg BAZELISK_VERSION="$(BAZELISK_VERSION)" \
 		--build-arg BAZEL_VERSION="$(BAZEL_VERSION)" \
 		--build-arg DEPS_CC_TOOLCHAIN="$(DEPS_CC_TOOLCHAIN)" \
+		--build-arg DEPS_POSTGRES="$(DEPS_POSTGRES)" \
 		--build-arg USERNAME="$(USERNAME)" \
 		--build-arg HOMEDIR="/$(USERNAME)" \
 		--label org.opencontainers.image.source="$(GH_REPO_URL)" \
