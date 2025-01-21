@@ -2,17 +2,10 @@
 Postgres build configuration.
 """
 
-load("@pg_src//:repo.bzl", "DEFAULT_VERSION", "REPO_NAME", "VERSIONS")
+load("@pg_src//:repo.bzl", "DEFAULT_VERSION", "METADATA", "REPO_NAME", "VERSIONS")
+load(":build_options.bzl", "DEFAULT_OPTION_SET", "OPTION_SETS", "build_options")
 
-# NOTE:
-# Postgres embeds the install paths via a generated pg_config.h that uses the
-# prefix but the prefix is the install prefix **at build time**. Since we build
-# in sandboxes and will be installing the binaries at a different path, we've
-# added a patch that adds a new prefix_distro build option to set the prefix of
-# the "final install path in the distro".
-PREFIX_DISTRO = "/postgres"
-
-def _target(name, version, repo_name, prefix_distro):
+def _target(name, version, option_set, repo_name):
     """
     Creates a struct representing a Postgres build target.
 
@@ -20,51 +13,54 @@ def _target(name, version, repo_name, prefix_distro):
         name (str): Base name for the target (e.g. "postgres").
         version (str): Postgres version string (e.g. "16.0"). Must be one of
             the versions in `pg_src`.
+        option_set (str): The name of the Postgres option sets to add to the
+            target. An option set is a predefined combination of compile-time
+            options.
         repo_name (str): The name of the external Bazel repository with the
             Postgres source code.
-        prefix_distro (str): The install prefix where the Postgres binaries are
-            finally installed.
 
     Returns:
         A `pg_target` `struct`:
           - `name (str)`: a unique target name (e.g. "postgres~16.0").
           - `version (str)`: the Postgres version.
-          - `prefix_distro (str)`: The install prefix where the binaries are
-            finally installed.
+          - `build_options (dict)`: Meson build options that configure optional
+            Postgres features and other compilation parameters.
+          - `auto_features (str)`: Controls the enabling and disabling of Meson
+            build options and optional Postgres features not specified in
+            `build_options`.
           - `pg_src (str)`: the label of the external Bazel repository with the
             source code for the given Postgres version.
     """
     if version not in VERSIONS:
         fail("Postgres version %s is not available in pg_src" % version)
 
-    # Postgres features, see:
-    # https://www.postgresql.org/docs/current/install-meson.html#MESON-OPTIONS-FEATURES
-    build_options = {
-        "icu": "disabled",
-        "prefix_distro": "%s/%s" % (prefix_distro, version),
-        "readline": "disabled",
-        "rpath": "false",
-        "zlib": "disabled",
-    }
+    options, auto_features = build_options(
+        version,
+        option_set,
+        METADATA.get("build_options", {}),
+    )
 
     return struct(
-        name = "~".join((name, version)),
+        name = "~".join((name, version, option_set)),
         version = version,
-        build_options = build_options,
+        option_set = option_set,
+        build_options = options,
+        auto_features = auto_features,
         pg_src = "@%s//%s" % (repo_name, version),
     )
 
-def _new(name, versions, repo_name, prefix_distro):
+def _new(name, versions, option_sets, repo_name):
     """
     Creates a config `struct` containing build targets for multiple Postgres versions.
 
     Args:
         name (str): A base name for the group of targets (e.g. "postgres").
         versions (list[str]): List of Postgres versions.
+        option_sets (list[str]): The names of the Postgres option sets to
+            add to the targets. An option set is a predefined combination of
+            compile-time options.
         repo_name (str): The name of the external Bazel repository with the
             Postgres source code.
-        prefix_distro (str): The install prefix where the Postgres binaries are
-            finally installed.
 
     Returns:
         A config `struct` with:
@@ -76,12 +72,16 @@ def _new(name, versions, repo_name, prefix_distro):
     default_target = None
 
     for version in versions:
-        target = _target(name, version, repo_name, prefix_distro)
+        for option_set in option_sets:
+            target = _target(name, version, option_set, repo_name)
 
-        if version == DEFAULT_VERSION:
-            default_target = target
+            if (
+                version == DEFAULT_VERSION and
+                option_set == DEFAULT_OPTION_SET
+            ):
+                default_target = target
 
-        targets.append(target)
+            targets.append(target)
 
     return struct(
         name = name,
@@ -96,6 +96,6 @@ cfg = struct(
 CFG = cfg.new(
     name = "postgres",
     versions = VERSIONS,
+    option_sets = OPTION_SETS,
     repo_name = REPO_NAME,
-    prefix_distro = PREFIX_DISTRO,
 )

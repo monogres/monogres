@@ -17,9 +17,45 @@ packages [PostgreSQL]. It’s designed to be **reproducible**, **modular**, and
 
 At its core, `Monogres` provides:
 
-- **Upstream, reproducible Postgres builds**.
+- **Upstream, reproducible Postgres builds** with many predefined "option sets"
+  (see below).
 - A **foundation** for downstream distributions to base their own customized
   Postgres variants.
+
+## 🐘 Postgres, Your Way
+
+`Monogres` builds Postgres with many predefined "option sets" (combinations of
+compile-time options) tailored for different use cases:
+
+<details>
+<summary>Option Sets</summary>
+
+### Option Sets
+
+|                 | `barebones` | `minimal` | `regular` | `full` |
+|----------------:|:-----------:|:---------:|:---------:|:------:|
+| `bonjour`       |             |           |           | X      |
+| `gssapi`        |             |           |           | X      |
+| `icu`           |             |           | X         | X      |
+| `ldap`          |             |           |           | X      |
+| `libxml`        |             |           |           | X      |
+| `libxslt`       |             |           |           | X      |
+| `llvm`          |             |           | X         | X      |
+| `lz4`           |             |           | X         | X      |
+| `nls`           |             | X         | X         | X      |
+| `pam`           |             |           |           | X      |
+| `plperl`        |             |           |           | X      |
+| `plpython`      |             |           | X         | X      |
+| `pltcl`         |             |           |           | X      |
+| `readline`      |             | X         | X         | X      |
+| `selinux`       |             |           |           | X      |
+| `ssl=openssl`   |             | X         | X         | X      |
+| `systemd`       |             |           | X         | X      |
+| `uuid=e2fs`     |             | X         | X         | X      |
+| `zlib`          |             | X         | X         | X      |
+| `zstd`          |             |           | X         | X      |
+
+</details>
 
 ## 🌱 Built for the Community
 

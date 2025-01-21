@@ -18,5 +18,12 @@
       "tag": "REL_16_0",
       "sha256": "f3ffaa5cbeefd3a6d426423e1001d01e543841946e5b13d4c8ebcad4434f2be8"
     }
+  },
+  "metadata": {
+    "build_options": {
+      "injection_points": {
+        "compatible": ">=17.0"
+      }
+    }
   }
 }

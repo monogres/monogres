@@ -79,6 +79,16 @@ ENV_MESON = dict(
     # tools are not needing it. If another tool does, I think it would probably
     # fail...
     RUNFILES_DIR = "$(execpath @bison//bin:bison).runfiles/",
+    # rules_foreign_cc pkg-config needs this, these are the default pkg-config
+    # search dirs, found running pkg-config --variable pc_path pkg-config
+    PKG_CONFIG_PATH = ":".join([
+        "/usr/local/lib/$$(uname -m)-linux-gnu/pkgconfig",
+        "/usr/local/lib/pkgconfig",
+        "/usr/local/share/pkgconfig",
+        "/usr/lib/$$(uname -m)-linux-gnu/pkgconfig",
+        "/usr/lib/pkgconfig",
+        "/usr/share/pkgconfig",
+    ]),
 )
 
 # NOTE:
@@ -91,7 +101,7 @@ MESON_TOOL_OPTIONS = dict(
     PYTHON = "$PYTHON",
 )
 
-def pg_build(name, pg_src, build_options):
+def pg_build(name, pg_src, build_options, auto_features):
     """
     Generates a Bazel target to build Postgres with the Meson build system.
 
@@ -107,6 +117,14 @@ def pg_build(name, pg_src, build_options):
             Features](https://www.postgresql.org/docs/current/install-meson.html#MESON-OPTIONS-FEATURES)
             and
             [`meson_options.txt`](https://github.com/postgres/postgres/blob/master/meson_options.txt).
+        auto_features (str): Controls whether Meson build options and optional
+            Postgres features not specified in `build_options` will be
+            `enable`d, `disable`d or `auto` (enabled or disabled based on
+            detected system capabilities). For more details, see the official
+            documentation for [Postgres
+            `--auto-features`](https://www.postgresql.org/docs/current/install-meson.html#CONFIGURE-AUTO-FEATURES-MESON)
+            and [Meson Build Options
+            "Features"](https://mesonbuild.com/Build-options.html#features).
     """
     meson(
         name = name,
@@ -116,6 +134,9 @@ def pg_build(name, pg_src, build_options):
         options = build_options | MESON_TOOL_OPTIONS,
         out_binaries = PG_BINARIES,
         out_data_dirs = OUT_DATA_DIRS,
+        setup_args = [
+            "--auto-features=%s" % auto_features,
+        ],
         toolchains = TOOLCHAINS,
         visibility = ["//visibility:public"],
     )
@@ -148,6 +169,7 @@ def pg_build_all(name, cfg):
             name = target.name,
             pg_src = target.pg_src,
             build_options = target.build_options,
+            auto_features = target.auto_features,
         )
 
     native.alias(
