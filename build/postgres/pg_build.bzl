@@ -11,95 +11,96 @@ build.
 
 load("@rules_foreign_cc//foreign_cc:meson.bzl", "meson")
 
-PG_BINARIES = [
-    "initdb",
-    "postgres",
-    "pg_config",
-    "pg_isready",
-]
+def _meson_common_args(pg_src, build_options, auto_features):
+    build_data = [
+        "@m4//bin:m4",
+        "@flex//bin:flex",
+        "@bison//bin:bison",
+        "@python_3_11//:python3",
+    ]
 
-# NOTE: including lib in out_data_dirs because even when it's
-# out_lib_dir's default, it's not included in declared_outputs
-OUT_DATA_DIRS = [
-    "lib",
-    "share",
-]
+    toolchains = [
+        "@rules_m4//m4:current_m4_toolchain",
+        "@rules_flex//flex:current_flex_toolchain",
+        "@rules_bison//bison:current_bison_toolchain",
+    ]
 
-BUILD_DATA = [
-    "@m4//bin:m4",
-    "@flex//bin:flex",
-    "@bison//bin:bison",
-    "@python_3_11//:python3",
-]
-
-TOOLCHAINS = [
-    "@rules_m4//m4:current_m4_toolchain",
-    "@rules_flex//flex:current_flex_toolchain",
-    "@rules_bison//bison:current_bison_toolchain",
-]
-
-# NOTE:
-# For env vars that have relative paths starting with 'external/'
-# rules_foreign_cc makes them absolute prepending $$EXT_BUILD_ROOT$$
-# automatically, see:
-# https://github.com/bazel-contrib/rules_foreign_cc/blob/0.12.0/foreign_cc/private/make_env_vars.bzl#L123-L124
-# https://github.com/bazel-contrib/rules_foreign_cc/blob/0.12.0/foreign_cc/private/cc_toolchain_util.bzl#L352
-#
-# HOWEVER! this seems to only apply to $(execpath ...) So, if you have an env
-# variable (e.g. TEST = "external/foo/bar") or a Make variable from a toolchain
-# (e.g. "$(TEST)") that resolves to "external/foo/bar" IT WON'T WORK without
-# explicitly adding the $$EXT_BUILD_ROOT prefix.
-ENV = dict(
-    BISON = "$(execpath @bison//bin:bison)",
-    FLEX = "$(execpath @flex//bin:flex)",
     # NOTE:
-    # The flex binary from rules_flex doesn't have a macro processor defined at
-    # compile time so flex will try to find the m4 binary using the M4 env
-    # variable and if not set, it will just call `m4` and will let `execvp` to
-    # resolve it using `PATH`.
-    M4 = "$(execpath @m4//bin:m4)",
-    PYTHON = "$(execpath @python_3_11//:python3)",
-)
+    # For env vars that have relative paths starting with 'external/'
+    # rules_foreign_cc makes them absolute prepending $$EXT_BUILD_ROOT$$
+    # automatically, see:
+    # https://github.com/bazel-contrib/rules_foreign_cc/blob/0.12.0/foreign_cc/private/make_env_vars.bzl#L123-L124
+    # https://github.com/bazel-contrib/rules_foreign_cc/blob/0.12.0/foreign_cc/private/cc_toolchain_util.bzl#L352
+    #
+    # HOWEVER! this seems to only apply to $(execpath ...) So, if you have an
+    # env variable (e.g. TEST = "external/foo/bar") or a Make variable from a
+    # toolchain (e.g. "$(TEST)") that resolves to "external/foo/bar" IT WON'T
+    # WORK without explicitly adding the $$EXT_BUILD_ROOT prefix.
+    env = dict(
+        BISON = "$(execpath @bison//bin:bison)",
+        FLEX = "$(execpath @flex//bin:flex)",
+        # NOTE:
+        # The flex binary from rules_flex doesn't have a macro processor
+        # defined at compile time so flex will try to find the m4 binary using
+        # the M4 env variable and if not set, it will just call `m4` and will
+        # let `execvp` to resolve it using `PATH`.
+        M4 = "$(execpath @m4//bin:m4)",
+        PYTHON = "$(execpath @python_3_11//:python3)",
+    )
 
-ENV_MESON = dict(
+    env_meson = dict(
+        # NOTE:
+        # https://github.com/jmillikin/rules_bison/issues/17#issuecomment-2399677539
+        #
+        # I'm not sure who's responsible (Bazel or rules_foreign_cc) but
+        # rules_foreign_cc meson is using a wrapper script that does some
+        # runfiles initialization that ends up being wrong: it points to the
+        # Meson runfiles dir when running tools from Meson and Bison can't find
+        # some of its data files.
+        #
+        # Looking at the rules_foreign_cc wrapper script:
+        # https://github.com/bazel-contrib/rules_foreign_cc/blob/0.12.0/foreign_cc/private/runnable_binary_wrapper.sh
+        # I found that if the RUNFILES_DIR was set to the Bison runfiles dir,
+        # it would use it. Now, this hack seems to "fix" it but IMHO it's very
+        # fragile and it seems to work by sheer luck, probably because the rest
+        # of the tools are not needing it. If another tool does, I think it
+        # would probably fail...
+        RUNFILES_DIR = "$(execpath @bison//bin:bison).runfiles/",
+        # rules_foreign_cc pkg-config needs this, these are the default
+        # pkg-config search dirs, found running pkg-config --variable pc_path
+        # pkg-config
+        PKG_CONFIG_PATH = ":".join([
+            "/usr/local/lib/$$(uname -m)-linux-gnu/pkgconfig",
+            "/usr/local/lib/pkgconfig",
+            "/usr/local/share/pkgconfig",
+            "/usr/lib/$$(uname -m)-linux-gnu/pkgconfig",
+            "/usr/lib/pkgconfig",
+            "/usr/share/pkgconfig",
+        ]),
+    )
+
     # NOTE:
-    # https://github.com/jmillikin/rules_bison/issues/17#issuecomment-2399677539
-    #
-    # I'm not sure who's responsible (Bazel or rules_foreign_cc) but
-    # rules_foreign_cc meson is using a wrapper script that does some runfiles
-    # initialization that ends up being wrong: it points to the Meson runfiles
-    # dir when running tools from Meson and Bison can't find some of its data
-    # files.
-    #
-    # Looking at the rules_foreign_cc wrapper script:
-    # https://github.com/bazel-contrib/rules_foreign_cc/blob/0.12.0/foreign_cc/private/runnable_binary_wrapper.sh
-    # I found that if the RUNFILES_DIR was set to the Bison runfiles dir, it
-    # would use it. Now, this hack seems to "fix" it but IMHO it's very fragile
-    # and it seems to work by sheer luck, probably because the rest of the
-    # tools are not needing it. If another tool does, I think it would probably
-    # fail...
-    RUNFILES_DIR = "$(execpath @bison//bin:bison).runfiles/",
-    # rules_foreign_cc pkg-config needs this, these are the default pkg-config
-    # search dirs, found running pkg-config --variable pc_path pkg-config
-    PKG_CONFIG_PATH = ":".join([
-        "/usr/local/lib/$$(uname -m)-linux-gnu/pkgconfig",
-        "/usr/local/lib/pkgconfig",
-        "/usr/local/share/pkgconfig",
-        "/usr/lib/$$(uname -m)-linux-gnu/pkgconfig",
-        "/usr/lib/pkgconfig",
-        "/usr/share/pkgconfig",
-    ]),
-)
+    # Postgres configure-make build uses env variables to find / override the
+    # tools but the Meson build uses find_program(get_option('<TOOL>'), ...) so
+    # we have to pass the tools as Meson options pointing them at the env
+    # variables.
+    meson_tool_options = dict(
+        BISON = "$BISON",
+        FLEX = "$FLEX",
+        PYTHON = "$PYTHON",
+    )
 
-# NOTE:
-# Postgres configure-make build uses env variables to find / override the tools
-# but the Meson build uses find_program(get_option('<TOOL>'), ...) so we have
-# to pass the tools as Meson options pointing them at the env variables.
-MESON_TOOL_OPTIONS = dict(
-    BISON = "$BISON",
-    FLEX = "$FLEX",
-    PYTHON = "$PYTHON",
-)
+    return dict(
+        build_data = build_data,
+        env = env | env_meson,
+        lib_source = pg_src,
+        options = build_options | meson_tool_options,
+        setup_args = [
+            "--auto-features=%s" % auto_features,
+        ],
+        toolchains = toolchains,
+        visibility = ["//visibility:public"],
+    )
 
 def pg_build(name, pg_src, build_options, auto_features):
     """
@@ -126,20 +127,31 @@ def pg_build(name, pg_src, build_options, auto_features):
             and [Meson Build Options
             "Features"](https://mesonbuild.com/Build-options.html#features).
     """
-    meson(
-        name = name,
-        build_data = BUILD_DATA,
-        env = ENV | ENV_MESON,
-        lib_source = pg_src,
-        options = build_options | MESON_TOOL_OPTIONS,
-        out_binaries = PG_BINARIES,
-        out_data_dirs = OUT_DATA_DIRS,
-        setup_args = [
-            "--auto-features=%s" % auto_features,
-        ],
-        toolchains = TOOLCHAINS,
-        visibility = ["//visibility:public"],
+    pg_binaries = [
+        "initdb",
+        "postgres",
+        "pg_config",
+        "pg_isready",
+    ]
+
+    # NOTE: including lib in out_data_dirs because even when it's
+    # out_lib_dir's default, it's not included in declared_outputs
+    out_data_dirs = [
+        "lib",
+        "share",
+    ]
+
+    meson_common_args = _meson_common_args(
+        pg_src = pg_src,
+        build_options = build_options,
+        auto_features = auto_features,
     )
+
+    meson(**(meson_common_args | dict(
+        name = name,
+        out_binaries = pg_binaries,
+        out_data_dirs = out_data_dirs,
+    )))
 
     # NOTE:
     # This target is useful for debugging. On failure, rules_foreign_cc does
