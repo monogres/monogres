@@ -11,3 +11,5 @@ def build_test(name):
 def build_all_test(name, cfg):
     for target in cfg.targets:
         build_test(target.name)
+        name_introspect = "%s--introspect" % target.name
+        build_test(name_introspect)

@@ -95,38 +95,16 @@ def _meson_common_args(pg_src, build_options, auto_features):
         env = env | env_meson,
         lib_source = pg_src,
         options = build_options | meson_tool_options,
-        setup_args = [
-            "--auto-features=%s" % auto_features,
-        ],
+        target_args = {
+            "setup": [
+                "--auto-features=%s" % auto_features,
+            ],
+        },
         toolchains = toolchains,
         visibility = ["//visibility:public"],
     )
 
-def pg_build(name, pg_src, build_options, auto_features):
-    """
-    Generates a Bazel target to build Postgres with the Meson build system.
-
-    This rule configures the environment and invokes the rules_foreign_cc
-    `meson` rule, using preconfigured options, toolchains, etc.
-
-    Args:
-        name (str): The name of the Bazel target to generate.
-        pg_src (str): The external Bazel repo with the Postgres source code.
-        build_options (dict): Meson build options that configure optional
-            Postgres features and other compilation parameters. For the full
-            list of available options, see [PostgreSQL
-            Features](https://www.postgresql.org/docs/current/install-meson.html#MESON-OPTIONS-FEATURES)
-            and
-            [`meson_options.txt`](https://github.com/postgres/postgres/blob/master/meson_options.txt).
-        auto_features (str): Controls whether Meson build options and optional
-            Postgres features not specified in `build_options` will be
-            `enable`d, `disable`d or `auto` (enabled or disabled based on
-            detected system capabilities). For more details, see the official
-            documentation for [Postgres
-            `--auto-features`](https://www.postgresql.org/docs/current/install-meson.html#CONFIGURE-AUTO-FEATURES-MESON)
-            and [Meson Build Options
-            "Features"](https://mesonbuild.com/Build-options.html#features).
-    """
+def _pg_build_meson(name, pg_src, build_options, auto_features):
     pg_binaries = [
         "initdb",
         "postgres",
@@ -164,6 +142,58 @@ def pg_build(name, pg_src, build_options, auto_features):
         srcs = [name],
         output_group = "Meson_logs",
     )
+
+def _pg_build_introspect(name, pg_src, build_options, auto_features):
+    meson_common_args = _meson_common_args(
+        pg_src = pg_src,
+        build_options = build_options,
+        auto_features = auto_features,
+    )
+
+    introspect_target_name = "{}--introspect".format(name)
+
+    meson(**(meson_common_args | dict(
+        name = introspect_target_name,
+        out_include_dir = "",
+        out_data_files = ["{}.json".format(name)],
+        targets = ["introspect"],
+        tags = ["manual"],
+    )))
+
+    native.filegroup(
+        name = "{}--logs".format(introspect_target_name),
+        srcs = [introspect_target_name],
+        output_group = "Meson_logs",
+        tags = ["manual"],
+    )
+
+def pg_build(name, pg_src, build_options, auto_features):
+    """
+    Generates a Bazel target to build Postgres with the Meson build system.
+
+    This rule configures the environment and invokes the rules_foreign_cc
+    `meson` rule, using preconfigured options, toolchains, etc.
+
+    Args:
+        name (str): The name of the Bazel target to generate.
+        pg_src (str): The external Bazel repo with the Postgres source code.
+        build_options (dict): Meson build options that configure optional
+            Postgres features and other compilation parameters. For the full
+            list of available options, see [PostgreSQL
+            Features](https://www.postgresql.org/docs/current/install-meson.html#MESON-OPTIONS-FEATURES)
+            and
+            [`meson_options.txt`](https://github.com/postgres/postgres/blob/master/meson_options.txt).
+        auto_features (str): Controls whether Meson build options and optional
+            Postgres features not specified in `build_options` will be
+            `enable`d, `disable`d or `auto` (enabled or disabled based on
+            detected system capabilities). For more details, see the official
+            documentation for [Postgres
+            `--auto-features`](https://www.postgresql.org/docs/current/install-meson.html#CONFIGURE-AUTO-FEATURES-MESON)
+            and [Meson Build Options
+            "Features"](https://mesonbuild.com/Build-options.html#features).
+    """
+    _pg_build_meson(name, pg_src, build_options, auto_features)
+    _pg_build_introspect(name, pg_src, build_options, auto_features)
 
 def pg_build_all(name, cfg):
     """
