@@ -1,0 +1,26 @@
+# /* vim: set filetype=sh : */
+
+# Build cache
+build --experimental_guard_against_concurrent_changes
+
+# Disable `WORKSPACE`
+build --noenable_workspace
+
+# Prevent `PATH` and `LD_LIBRARY_PATH` leaking into action environment
+build --incompatible_strict_action_env
+
+# Prevent symlink forest under `.runfiles/wsname/external/repo`
+build --nolegacy_external_runfiles
+
+# Print relative paths where possible to reduce noise
+common --attempt_to_print_relative_paths
+
+# Disable warning transitive module versions
+common --check_direct_dependencies=off
+
+# TODO: fix this
+build --action_env=CC=clang-14
+build --action_env=CXX=clang-14
+
+# User-specific .bazelrc
+try-import %workspace%/.bazelrc.user

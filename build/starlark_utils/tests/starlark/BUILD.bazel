@@ -1,0 +1,3 @@
+load(":starlark.bzl", starlark_test_suite = "test_suite")
+
+starlark_test_suite()

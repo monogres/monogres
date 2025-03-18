@@ -1,0 +1,12 @@
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files([
+    "starlark.bzl",
+])
+
+bzl_library(
+    name = "starlark",
+    srcs = ["starlark.bzl"],
+)
