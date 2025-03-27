@@ -24,6 +24,20 @@
       "injection_points": {
         "compatible": ">=17.0"
       }
+    },
+    "introspect": {
+      "17.0": {
+        "barebones": "//postgres/introspect/json:postgres~17.0~barebones.json",
+        "minimal": "//postgres/introspect/json:postgres~17.0~minimal.json",
+        "regular": "//postgres/introspect/json:postgres~17.0~regular.json",
+        "full": "//postgres/introspect/json:postgres~17.0~full.json"
+      },
+      "16.0": {
+        "barebones": "//postgres/introspect/json:postgres~16.0~barebones.json",
+        "minimal": "//postgres/introspect/json:postgres~16.0~minimal.json",
+        "regular": "//postgres/introspect/json:postgres~16.0~regular.json",
+        "full": "//postgres/introspect/json:postgres~16.0~full.json"
+      }
     }
   }
 }

@@ -11,6 +11,11 @@ local_path_override(
     path = "..",
 )
 
+local_path_override(
+    module_name = "starlark_utils",
+    path = "../starlark_utils",
+)
+
 llvm = use_extension("@toolchains_llvm//toolchain/extensions:llvm.bzl", "llvm", dev_dependency = True)
 llvm.toolchain(
     name = "llvm_toolchain_system",

@@ -7,15 +7,22 @@ module(
     compatibility_level = 0,
 )
 
+bazel_dep(name = "bazel_skylib", version = "1.7.1")
 bazel_dep(name = "download_archives", version = "0.1.0")
 bazel_dep(name = "rules_bison", version = "0.4")
 bazel_dep(name = "rules_flex", version = "0.4")
 bazel_dep(name = "rules_foreign_cc", version = "0.15.0")
 bazel_dep(name = "rules_m4", version = "0.3")
 bazel_dep(name = "rules_python", version = "1.0.0")
+bazel_dep(name = "starlark_utils", version = "0.0.1")
 bazel_dep(name = "version_utils", version = "0.1.0")
 
 bazel_dep(name = "toolchains_llvm", version = "1.4.0", dev_dependency = True)
+
+local_path_override(
+    module_name = "starlark_utils",
+    path = "starlark_utils",
+)
 
 # toolchains/
 llvm = use_extension("@toolchains_llvm//toolchain/extensions:llvm.bzl", "llvm", dev_dependency = True)
@@ -79,4 +86,12 @@ download_archives(
         "//postgres/patches:0005-17.0-hack-remove-execroot-from-CC.patch": "17.0/*",
     },
     version_scheme = "pgver",
+)
+
+# postgres/introspect/
+introspect = use_repo_rule("//postgres/introspect:repository.bzl", "repo")
+
+introspect(
+    name = "pg_introspect",
+    pg_src = "@pg_src",
 )

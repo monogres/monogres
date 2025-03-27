@@ -1,0 +1,23 @@
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+
+package(default_visibility = ["//postgres/introspect:__pkg__"])
+
+exports_files([
+    "meson.bzl",
+    "metadata.bzl",
+])
+
+bzl_library(
+    name = "metadata",
+    srcs = ["metadata.bzl"],
+)
+
+bzl_library(
+    name = "meson",
+    srcs = ["meson.bzl"],
+    deps = [
+        ":metadata",
+        "@starlark_utils//starlark",
+        "@version_utils//spec",
+    ],
+)
