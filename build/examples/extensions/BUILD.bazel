@@ -1,0 +1,12 @@
+"""e2e test"""
+
+load("@monogres//extensions/contrib:cfg.bzl", CFGS_CONTRIB = "CFGS")
+load(":test.bzl", "build_all_test")
+
+[
+    build_all_test(
+        name = "contrib",
+        cfg = cfg,
+    )
+    for cfg in CFGS_CONTRIB.values()
+]

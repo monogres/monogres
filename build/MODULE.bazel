@@ -7,6 +7,7 @@ module(
     compatibility_level = 0,
 )
 
+bazel_dep(name = "aspect_bazel_lib", version = "2.15.3")
 bazel_dep(name = "bazel_skylib", version = "1.7.1")
 bazel_dep(name = "download_archives", version = "0.1.0")
 bazel_dep(name = "rules_bison", version = "0.4")

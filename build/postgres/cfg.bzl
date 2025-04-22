@@ -40,6 +40,15 @@ def _target(name, version, option_set, repo_name):
         METADATA.get("build_options", {}),
     )
 
+    pg_version = None
+
+    if option_set == "full":
+        # We want the "full" option_set to be the default Postgres target
+        pg_version = struct(
+            name = "~".join((name, version)),
+            version = version,
+        )
+
     return struct(
         name = "~".join((name, version, option_set)),
         version = version,
@@ -47,6 +56,7 @@ def _target(name, version, option_set, repo_name):
         build_options = options,
         auto_features = auto_features,
         pg_src = "@%s//%s" % (repo_name, version),
+        pg_version = pg_version,
     )
 
 def _new(name, versions, option_sets, repo_name):

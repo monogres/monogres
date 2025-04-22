@@ -110,6 +110,9 @@ def _pg_build_meson(name, pg_src, build_options, auto_features):
         "postgres",
         "pg_config",
         "pg_isready",
+        # NOTE: these are needed for contrib extensions
+        "vacuumlo",
+        "oid2name",
     ]
 
     # NOTE: including lib in out_data_dirs because even when it's
@@ -167,7 +170,7 @@ def _pg_build_introspect(name, pg_src, build_options, auto_features):
         tags = ["manual"],
     )
 
-def pg_build(name, pg_src, build_options, auto_features):
+def pg_build(name, pg_src, build_options, auto_features, pg_version = None):
     """
     Generates a Bazel target to build Postgres with the Meson build system.
 
@@ -191,9 +194,18 @@ def pg_build(name, pg_src, build_options, auto_features):
             `--auto-features`](https://www.postgresql.org/docs/current/install-meson.html#CONFIGURE-AUTO-FEATURES-MESON)
             and [Meson Build Options
             "Features"](https://mesonbuild.com/Build-options.html#features).
+        pg_version (struct): Optional `struct` that contains the Postgres name
+            and version that will be the default target.
     """
     _pg_build_meson(name, pg_src, build_options, auto_features)
     _pg_build_introspect(name, pg_src, build_options, auto_features)
+
+    if pg_version:
+        native.alias(
+            name = pg_version.name,
+            actual = name,
+            visibility = ["//visibility:public"],
+        )
 
 def pg_build_all(name, cfg):
     """
@@ -212,6 +224,7 @@ def pg_build_all(name, cfg):
             pg_src = target.pg_src,
             build_options = target.build_options,
             auto_features = target.auto_features,
+            pg_version = target.pg_version,
         )
 
     native.alias(

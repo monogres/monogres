@@ -1,0 +1,7 @@
+load(":cfg.bzl", "CFGS")
+load(":pgext_contrib.bzl", "pgext_contrib_all")
+
+pgext_contrib_all(
+    name = "contrib",
+    cfgs = CFGS.values(),
+)
