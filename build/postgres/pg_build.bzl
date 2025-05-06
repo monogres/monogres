@@ -10,6 +10,7 @@ build.
 """
 
 load("@rules_foreign_cc//foreign_cc:meson.bzl", "meson")
+load(":toolchain.bzl", "pg_template_variable_info")
 
 def _meson_common_args(pg_src, build_options, auto_features):
     build_data = [
@@ -207,6 +208,12 @@ def pg_build(name, pg_src, build_options, auto_features, pg_version = None):
             visibility = ["//visibility:public"],
         )
 
+        pg_template_variable_info(
+            name = "{}--toolchain".format(pg_version.name),
+            target = name,
+            visibility = ["//visibility:public"],
+        )
+
 def pg_build_all(name, cfg):
     """
     Defines Bazel targets for building all configured Postgres versions.
@@ -236,5 +243,11 @@ def pg_build_all(name, cfg):
     native.alias(
         name = "{}--logs".format(name),
         actual = "{}--logs".format(cfg.default.name),
+        visibility = ["//visibility:public"],
+    )
+
+    pg_template_variable_info(
+        name = "{}--toolchain".format(name),
+        target = cfg.default.name,
         visibility = ["//visibility:public"],
     )
