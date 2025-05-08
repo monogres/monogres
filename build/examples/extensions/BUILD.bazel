@@ -1,6 +1,7 @@
 """e2e test"""
 
 load("@monogres//extensions/contrib:cfg.bzl", CFGS_CONTRIB = "CFGS")
+load("@monogres//extensions/noset:cfg.bzl", CFG_NOSET = "CFG")
 load(":test.bzl", "build_all_test")
 
 [
@@ -10,3 +11,8 @@ load(":test.bzl", "build_all_test")
     )
     for cfg in CFGS_CONTRIB.values()
 ]
+
+build_all_test(
+    name = "noset",
+    cfg = CFG_NOSET,
+)

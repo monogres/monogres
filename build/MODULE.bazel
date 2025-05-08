@@ -103,3 +103,11 @@ introspect(
     name = "pg_introspect",
     pg_src = "@pg_src",
 )
+
+# extensions/
+
+# extensions/noset/
+download_archives(
+    name = "pgext_noset",
+    index = "//extensions/noset:repo.json",
+)

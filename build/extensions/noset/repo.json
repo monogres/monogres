@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "sources": {
+    "gl": {
+      "tag": "v{version}",
+      "gl_org": "ongresinc",
+      "name": "noset",
+      "filename": "noset-{tag}",
+      "strip_prefix": "{filename}",
+      "url": "https://gitlab.com/{gl_org}/extensions/{name}/-/archive/v{version}/{filename}.tar.gz"
+    }
+  },
+  "versions": {
+    "0.3.0": {
+      "sha256": "d6d2c778d336bb027de35e5aba74899dacbb086be0a182a7c539397fcb52542e"
+    }
+  }
+}
