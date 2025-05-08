@@ -40,6 +40,7 @@ def pgxs_build(name, pgxs_src, pg_version):
         }}
 
         compile_extension() {{
+            local cc="$$1"; shift
             local pgxs_src="$$1"; shift
             local ext_build_deps="$$1"; shift
             local installdir="$$1"; shift
@@ -77,6 +78,7 @@ def pgxs_build(name, pgxs_src, pg_version):
             echo
             "$$EXT_BUILD_ROOT/$(MAKE)" \
                 -C "$$pgxs_src_copy" \
+                CC="$$cc" \
                 PG_CONFIG="$$EXT_BUILD_ROOT/$(PG_CONFIG)" \
                 PG_CFLAGS="$${{pg_cflags[*]}}" \
                 PG_LDFLAGS="$${{pg_ldflags[*]}}" \
@@ -87,6 +89,7 @@ def pgxs_build(name, pgxs_src, pg_version):
             echo
             "$$EXT_BUILD_ROOT/$(MAKE)" \
                 -C "$$pgxs_src_copy" \
+                CC="$$cc" \
                 PG_CONFIG="$$EXT_BUILD_ROOT/$(PG_CONFIG)" \
                 PG_CFLAGS="$${{pg_cflags[*]}}" \
                 PG_LDFLAGS="$${{pg_ldflags[*]}}" \
@@ -165,7 +168,7 @@ def pgxs_build(name, pgxs_src, pg_version):
                 echo "========================================================"
                 echo
                 echo
-            }} | tee /dev/stderr | cat >> "$$LOG"
+            }} | tee /dev/stderr >> "$$LOG_FILE"
 
             exit 1
         }}
@@ -185,23 +188,21 @@ def pgxs_build(name, pgxs_src, pg_version):
 
         PGXS_INSTALLDIR="$$(make_pgxs_installdir "$$INSTALLDIR")"
 
+        CC="$$EXT_BUILD_ROOT/$(CC)"
+
         export LOG_FILE
 
         {{
-            compile_extension "$$PGXS_SRC" "$$EXT_BUILD_DEPS" "$$INSTALLDIR" 2>&1
+            compile_extension "$$CC" "$$PGXS_SRC" "$$EXT_BUILD_DEPS" "$$INSTALLDIR" 2>&1
             tar_ "$$TAR_FILE" --directory "$$PGXS_INSTALLDIR" .
         }} >> "$$LOG_FILE"
         """.format(
-            tar_cmd = "tar",
-            # https://reproducible-builds.org/docs/archives/
-            # https://www.gnu.org/software/tar/manual/html_node/Reproducibility.html
+            tar_cmd = "$(BSDTAR_BIN)",
+            # NOTE: https://reproducible-builds.org/docs/archives/
+            # We are using bsd tar which has less flags available. Consider
+            # writing an mtree and/or find a way to use aspect_bazel_lib tar
+            # rule like we did in extensions/contrib
             tar_args = "\n".join([
-                "--sort=name",
-                "--pax-option=exthdr.name=%d/PaxHeaders/%f",
-                "--pax-option=delete=atime,delete=ctime",
-                "--clamp-mtime",
-                "--mtime=0",
-                "--mode='go+u,go-w'",
                 "--format=posix",
                 "--numeric-owner",
                 "--owner=0",
@@ -211,7 +212,14 @@ def pgxs_build(name, pgxs_src, pg_version):
             log_file = "$(locations %s)" % log_file,
             pgxs_src = "$(locations %s)" % pgxs_src,
         ),
+        target_compatible_with = select({
+            # bsdtar.exe: -s is not supported by this version of bsdtar
+            "@platforms//os:windows": ["@platforms//:incompatible"],
+            "//conditions:default": [],
+        }),
         toolchains = [
+            "@bazel_tools//tools/cpp:current_cc_toolchain",
+            "@bsd_tar_toolchains//:resolved_toolchain",
             "@rules_foreign_cc//toolchains:current_make_toolchain",
             "//postgres:%s--toolchain" % pg_version.name,
         ],
