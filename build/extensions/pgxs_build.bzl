@@ -2,7 +2,7 @@
 Rules to build Postgres PGXS extensions from source.
 """
 
-def pgxs_build(name, pgxs_src, pg_version):
+def pgxs_build(name, pgxs_src, dependencies, pg_version):
     """
     Generates a Bazel target to build a PGXS extension with the [PGXS build system].
 
@@ -11,6 +11,8 @@ def pgxs_build(name, pgxs_src, pg_version):
     Args:
         name (str): The name of the Bazel target to generate.
         pgxs_src (str): The repo with the extension source code.
+        dependencies (list[str]): List of dependencies needed to build the
+            extension.
         pg_version (struct): `struct` containing metadata to select the
             Postgres build that will be used when building the extension.
     """
@@ -21,7 +23,7 @@ def pgxs_build(name, pgxs_src, pg_version):
         srcs = [
             "//postgres:%s" % pg_version.name,
             pgxs_src,
-        ],
+        ] + dependencies,
         outs = [tar_file, log_file],
         cmd = """
         tar_() {{
@@ -37,6 +39,26 @@ def pgxs_build(name, pgxs_src, pg_version):
                 -cf "$$tar_file" \
                 "$${{tar_args[@]}}" \
                 "$${{args[@]}}"
+        }}
+
+        setup_dependencies() {{
+            local ext_build_deps="$$1"; shift
+            local dependencies=("$$@");
+
+            echo "# $$(date) - setup_dependencies"
+
+            [[ $${{#dependencies[@]}} -eq 0 ]] && return
+
+            mkdir -p "$$ext_build_deps"
+
+            echo
+            echo "Extracting dependencies in ext_build_deps: $$ext_build_deps"
+
+            for dep in "$${{dependencies[@]}}"; do
+                echo "  - $$dep"
+                tar -xf "$$dep" -C "$$ext_build_deps"
+            done
+            echo
         }}
 
         compile_extension() {{
@@ -182,6 +204,7 @@ def pgxs_build(name, pgxs_src, pg_version):
         TAR_FILE="$$EXT_BUILD_ROOT/{tar_file}"
         LOG_FILE="$$EXT_BUILD_ROOT/{log_file}"
         PGXS_SRC="$$EXT_BUILD_ROOT/{pgxs_src}"
+        DEPENDENCIES=({dependencies})
 
         EXT_BUILD_DEPS="$$EXT_BUILD_ROOT/ext_build_deps"
         INSTALLDIR="$$EXT_BUILD_ROOT/$$(basename "$$TAR_FILE" .tar)"
@@ -193,6 +216,7 @@ def pgxs_build(name, pgxs_src, pg_version):
         export LOG_FILE
 
         {{
+            setup_dependencies "$$EXT_BUILD_DEPS" "$${{DEPENDENCIES[@]}}"
             compile_extension "$$CC" "$$PGXS_SRC" "$$EXT_BUILD_DEPS" "$$INSTALLDIR" 2>&1
             tar_ "$$TAR_FILE" --directory "$$PGXS_INSTALLDIR" .
         }} >> "$$LOG_FILE"
@@ -211,6 +235,10 @@ def pgxs_build(name, pgxs_src, pg_version):
             tar_file = "$(locations %s)" % tar_file,
             log_file = "$(locations %s)" % log_file,
             pgxs_src = "$(locations %s)" % pgxs_src,
+            dependencies = " ".join([
+                "$(locations %s)" % dependency
+                for dependency in dependencies
+            ]),
         ),
         target_compatible_with = select({
             # bsdtar.exe: -s is not supported by this version of bsdtar
@@ -241,8 +269,17 @@ def pgxs_build_all(name, cfg):
         pgxs_build(
             name = target.name,
             pgxs_src = target.pgxs_src,
+            dependencies = target.dependencies,
             pg_version = target.pg_version,
         )
+
+        for dep in target.dependencies:
+            dep_name = dep.split("//")[-1]
+            native.alias(
+                name = "%s--%s" % (target.name, dep_name),
+                actual = dep,
+                visibility = ["//visibility:public"],
+            )
 
     native.alias(
         name = name,

@@ -5,7 +5,7 @@ This module defines a build configuration for a Postgres extension. It's
 intended to be imported into BUILD files to then call `pgxs_build` rules.
 """
 
-def _new(name, versions, pg_targets, repo_name):
+def _new(name, versions, pg_targets, repo_name, dependencies = None):
     """
     Creates a config `struct` containing build targets for multiple Postgres extensions.
 
@@ -20,6 +20,8 @@ def _new(name, versions, pg_targets, repo_name):
             which to build the extension.
         repo_name (str): The name of the external Bazel repository with the
             extension source code.
+        dependencies (list[str]): List of dependencies needed to build the
+            extension.
 
     Returns:
         A `pgext` config `struct` with:
@@ -33,6 +35,7 @@ def _new(name, versions, pg_targets, repo_name):
             version = version,
             pg_version = pg_target.pg_version,
             pgxs_src = "@%s//%s:dir" % (repo_name, version),
+            dependencies = dependencies or [],
         )
         for version in versions
         for pg_target in pg_targets
