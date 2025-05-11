@@ -101,6 +101,17 @@ $APT_INSTALL
 apt_install $DEPS_CC_TOOLCHAIN
 EOF
 
+ARG DEPS_NON_HERMETIC_BAZEL_RULES
+ENV DEPS_NON_HERMETIC_BAZEL_RULES="$DEPS_NON_HERMETIC_BAZEL_RULES"
+
+# install dependencies for non-hermetic bazel rules
+RUN /bin/bash <<EOF
+if [[ ! -z "$DEPS_NON_HERMETIC_BAZEL_RULES" ]]; then
+    $APT_INSTALL
+    apt_install $DEPS_NON_HERMETIC_BAZEL_RULES
+fi
+EOF
+
 USER $USERNAME
 
 

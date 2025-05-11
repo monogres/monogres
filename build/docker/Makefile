@@ -36,6 +36,10 @@ DEPS_CC_TOOLCHAIN = \
 	libclang-rt-14-dev libc++-14-dev libc++abi-14-dev \
 	libc6-dev
 
+# rules_distroless: xz-utils
+DEPS_NON_HERMETIC_BAZEL_RULES = \
+	xz-utils
+
 DEPS_POSTGRES = \
 	gettext \
 	libavahi-compat-libdnssd-dev \
@@ -103,6 +107,7 @@ gen-image: .$(DOCKER_TARGET).Dockerfile
 		--build-arg BAZELISK_VERSION="$(BAZELISK_VERSION)" \
 		--build-arg BAZEL_VERSION="$(BAZEL_VERSION)" \
 		--build-arg DEPS_CC_TOOLCHAIN="$(DEPS_CC_TOOLCHAIN)" \
+		--build-arg DEPS_NON_HERMETIC_BAZEL_RULES="$(DEPS_NON_HERMETIC_BAZEL_RULES)" \
 		--build-arg DEPS_POSTGRES="$(DEPS_POSTGRES)" \
 		--build-arg USERNAME="$(USERNAME)" \
 		--build-arg HOMEDIR="/$(USERNAME)" \

@@ -12,6 +12,7 @@ bazel_dep(name = "bazel_skylib", version = "1.7.1")
 bazel_dep(name = "download_archives", version = "0.1.0")
 bazel_dep(name = "platforms", version = "1.0.0")
 bazel_dep(name = "rules_bison", version = "0.4")
+bazel_dep(name = "rules_distroless", version = "0.5.1")
 bazel_dep(name = "rules_flex", version = "0.4")
 bazel_dep(name = "rules_foreign_cc", version = "0.15.0")
 bazel_dep(name = "rules_m4", version = "0.3")
@@ -105,9 +106,23 @@ introspect(
 )
 
 # extensions/
+PG_EXTENSIONS = [
+    "noset",
+    "sslutils",
+]
 
-# extensions/noset/
-download_archives(
-    name = "pgext_noset",
-    index = "//extensions/noset:repo.json",
+[
+    download_archives(
+        name = "pgext_%s" % ext,
+        index = "//extensions/%s:repo.json" % ext,
+    )
+    for ext in PG_EXTENSIONS
+]
+
+apt = use_extension("@rules_distroless//apt:extensions.bzl", "apt")
+apt.install(
+    name = "pgext_sslutils_deps_debian12",
+    manifest = "//extensions/sslutils:deps_debian12.yaml",
+    nolock = True,
 )
+use_repo(apt, "pgext_sslutils_deps_debian12")

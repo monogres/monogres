@@ -2,6 +2,7 @@
 
 load("@monogres//extensions/contrib:cfg.bzl", CFGS_CONTRIB = "CFGS")
 load("@monogres//extensions/noset:cfg.bzl", CFG_NOSET = "CFG")
+load("@monogres//extensions/sslutils:cfg.bzl", CFG_SSLUTILS = "CFG")
 load(":test.bzl", "build_all_test")
 
 [
@@ -15,4 +16,9 @@ load(":test.bzl", "build_all_test")
 build_all_test(
     name = "noset",
     cfg = CFG_NOSET,
+)
+
+build_all_test(
+    name = "sslutils",
+    cfg = CFG_SSLUTILS,
 )

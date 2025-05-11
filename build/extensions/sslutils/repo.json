@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "sources": {
+    "gh": {
+      "tag": "v{version}",
+      "gh_org": "EnterpriseDB",
+      "name": "sslutils",
+      "filename": "{tag}",
+      "strip_prefix": "{name}-{version}",
+      "url": "https://github.com/EnterpriseDB/sslutils/archive/refs/tags/{filename}.tar.gz"
+    }
+  },
+  "versions": {
+    "1.4": {
+      "sha256": "58baceebde4024dceb6c6de9a25fbf602c35add2dc84de968112126555e27461"
+    }
+  }
+}
