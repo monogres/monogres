@@ -5,12 +5,15 @@ This module defines a build configuration for a Postgres extension. It's
 intended to be imported into BUILD files to then call `pgxs_build` rules.
 """
 
-def _new(name, versions, pg_targets, repo_name, dependencies = None):
+load(":features.bzl", "is_compatible")
+
+def _new(name, versions, pg_targets, repo_name, dependencies = None, metadata = None):
     """
     Creates a config `struct` containing build targets for multiple Postgres extensions.
 
     For each of the extension versions, it will generate a target `struct` that
-    contains all the required config needed to compile the extension.
+    contains all the required config needed to compile the extension, filtering
+    out the PG versions that are incompatible with the extension.
 
     Args:
         name (str): A base name for the group of targets (usually the name of
@@ -22,6 +25,9 @@ def _new(name, versions, pg_targets, repo_name, dependencies = None):
             extension source code.
         dependencies (list[str]): List of dependencies needed to build the
             extension.
+        metadata (dict): Extension metadata that can contain e.g.
+            `compatible_with` metadata to filter incompatible Postgres
+            versions.
 
     Returns:
         A `pgext` config `struct` with:
@@ -39,7 +45,10 @@ def _new(name, versions, pg_targets, repo_name, dependencies = None):
         )
         for version in versions
         for pg_target in pg_targets
-        if pg_target.pg_version
+        if (
+            pg_target.pg_version and
+            is_compatible(name, version, pg_target.pg_version.version, metadata)
+        )
     ]
 
     return struct(

@@ -13,6 +13,15 @@
   "versions": {
     "0.3.0": {
       "sha256": "d6d2c778d336bb027de35e5aba74899dacbb086be0a182a7c539397fcb52542e"
+    },
+    "0.2.0": {
+      "sha256": "77bcb59adf95dd725f5c18ad74e54b075b059f963e23440d996d2aa7b3c7c660"
+    }
+  },
+  "metadata": {
+    "compatible_with": {
+      "0.3.0": ">=14",
+      "0.2.0": ">=12, <14"
     }
   }
 }

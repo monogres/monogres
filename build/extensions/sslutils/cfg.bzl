@@ -2,7 +2,7 @@
 Extensions build configuration.
 """
 
-load("@pgext_sslutils//:repo.bzl", "REPO_NAME", "VERSIONS")
+load("@pgext_sslutils//:repo.bzl", "METADATA", "REPO_NAME", "VERSIONS")
 load("//extensions:cfg.bzl", "cfg")
 load("//postgres:cfg.bzl", PG_CFG = "CFG")
 
@@ -14,4 +14,5 @@ CFG = cfg.new(
     dependencies = [
         "@pgext_sslutils_deps_debian12//libssl-dev",
     ],
+    metadata = METADATA,
 )
