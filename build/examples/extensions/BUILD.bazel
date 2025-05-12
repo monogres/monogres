@@ -1,24 +1,13 @@
 """e2e test"""
 
-load("@monogres//extensions/contrib:cfg.bzl", CFGS_CONTRIB = "CFGS")
-load("@monogres//extensions/noset:cfg.bzl", CFG_NOSET = "CFG")
-load("@monogres//extensions/sslutils:cfg.bzl", CFG_SSLUTILS = "CFG")
+load("@monogres//extensions:all.bzl", "CFGS_ALL")
 load(":test.bzl", "build_all_test")
 
 [
     build_all_test(
-        name = "contrib",
+        name = name,
         cfg = cfg,
     )
-    for cfg in CFGS_CONTRIB.values()
+    for name, cfgs in CFGS_ALL.items()
+    for cfg in cfgs
 ]
-
-build_all_test(
-    name = "noset",
-    cfg = CFG_NOSET,
-)
-
-build_all_test(
-    name = "sslutils",
-    cfg = CFG_SSLUTILS,
-)
