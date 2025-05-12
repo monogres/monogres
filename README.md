@@ -12,13 +12,15 @@
 )](../../actions/workflows/pre-commit.yaml)
 
 **`Monogres`** is a Postgres distribution that centralizes, builds, and
-packages [PostgreSQL]. It’s designed to be **reproducible**, **modular**, and
-**community-driven**.
+packages [PostgreSQL] along with a curated ecosystem of extensions. It’s
+designed to be **reproducible**, **modular**, and **community-driven**.
 
 At its core, `Monogres` provides:
 
 - **Upstream, reproducible Postgres builds** with many predefined "option sets"
   (see below).
+- A centralized place to manage and build **Postgres extensions** in a
+  consistent and reproducible way.
 - A **foundation** for downstream distributions to base their own customized
   Postgres variants.
 
@@ -56,6 +58,19 @@ compile-time options) tailored for different use cases:
 | `zstd`          |             |           | X         | X      |
 
 </details>
+
+## 🧩 A Unified Extension Ecosystem
+
+The Postgres extension ecosystem is vast, and every user has different needs,
+only using a handful of different extensions.
+
+`Monogres` provides a centralized place to manage and build **Postgres
+extensions** in a consistent and reproducible way:
+
+- Pulls extensions from their official repositories.
+- Builds them in a **reproducible** way.
+- Delivers a coherent distribution that includes Postgres *plus* a wide range
+  of popular extensions.
 
 ## 🌱 Built for the Community
 
