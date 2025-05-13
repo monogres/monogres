@@ -1,0 +1,12 @@
+# /* vim: set filetype=sh : */
+
+# This file is .gitignored so you can add here your custom and/or user-specific
+# Bazel configs so that they are not committed to the repo like e.g. API tokens
+
+# build:remote-buildbuddy --remote_header=x-buildbuddy-api-key=ABCDEFG12345
+
+# NOTE:
+# password is a GH Personal Access Token with (at least) read:packages scope,
+# see: https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens
+# build:remote-buildbuddy --remote_exec_header=x-buildbuddy-platform.container-registry-username=foo
+# build:remote-buildbuddy --remote_exec_header=x-buildbuddy-platform.container-registry-password=ghp_ABCDEFG12345

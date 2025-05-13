@@ -11,6 +11,8 @@ common:debug --announce_rc
 common:debug --experimental_ui_max_stdouterr_bytes=52428800
 common:debug --nokeep_going
 
+common:remote --ui_actions_shown 100
+
 build --nostamp
 build --incompatible_strict_action_env
 build --reuse_sandbox_directories
@@ -38,6 +40,28 @@ build:debug --verbose_explanations
 build:debug --explain=/tmp/verbose_explanations
 build:debug --sandbox_debug
 build:debug --subcommands
+
+common:linux-amd64 --platforms=//toolchains:linux_amd64_rbe
+common:linux-amd64 --extra_execution_platforms=//toolchains:linux_amd64_rbe
+
+common:linux-arm64 --platforms=//toolchains:linux_arm64_rbe
+common:linux-arm64 --extra_execution_platforms=//toolchains:linux_arm64_rbe
+
+build:remote --define=EXECUTOR=remote
+build:remote --strategy=remote
+build:remote --spawn_strategy=remote
+build:remote --genrule_strategy=remote
+build:remote --jobs=50
+build:remote --nolegacy_important_outputs
+build:remote --noslim_profile
+build:remote --experimental_profile_include_target_label
+build:remote --experimental_profile_include_primary_output
+build:remote --noremote_upload_local_results
+
+build:remote-buildbuddy --config=remote --config=bes-buildbuddy
+build:remote-buildbuddy --remote_executor=grpcs://remote.buildbuddy.io
+build:remote-buildbuddy --experimental_remote_cache_compression
+build:remote-buildbuddy --experimental_remote_cache_compression_threshold=100  # bytes
 
 # custom bazelrc where each user can add their customizations and/or
 # e.g. authentication parts that shouldn't be committed to the repo.
