@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - bb-namespace.yaml
+  - browser.yaml
+  - cert-manager-rbac.yaml
+  - clusterissuer-letsencrypt.yaml
+  - frontend.yaml
+  - ingress-alb.yaml
+  - ingress-cert.yaml
+  - scheduler.yaml
+  - storage.yaml
+  - worker-amd64.yaml
+  - worker-arm64.yaml
+  - config/

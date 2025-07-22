@@ -89,6 +89,10 @@ repos:
           - --warnings=all
       - id: buildifier-lint
         args: *args
+  - repo: https://github.com/waisbrot/pre-commit-jsonnet.git
+    rev: v1.0
+    hooks:
+      - id: jsonnetfmt
   - repo: local
     hooks:
       - id: bazel-test

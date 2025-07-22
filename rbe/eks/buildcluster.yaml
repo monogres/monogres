@@ -1,0 +1,91 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+metadata:
+  name: buildcluster
+  region: eu-west-2
+  version: "1.33"
+availabilityZones:
+  - eu-west-2a
+  - eu-west-2b
+iam:
+  withOIDC: true
+  serviceAccounts:
+    - metadata:
+        name: aws-lbc
+        namespace: aws-lbc
+      wellKnownPolicies:
+        awsLoadBalancerController: true
+    - metadata:
+        name: external-dns
+        namespace: external-dns
+      roleName: external-dns-route53-rbe.monogres.dev
+      attachPolicyARNs:
+        - arn:aws:iam::857517990941:policy/external-dns-route53-rbe.monogres.dev
+    - metadata:
+        name: cert-manager
+        namespace: cert-manager
+      roleName: cert-manager-route53-rbe.monogres.dev
+      attachPolicyARNs:
+        - arn:aws:iam::857517990941:policy/cert-manager-route53-rbe.monogres.dev
+    - metadata:
+        name: cert-secret-syncer
+        namespace: cert-secret-syncer
+      roleName: cert-secret-syncer-acm-rbe.monogres.dev
+      attachPolicyARNs:
+        - arn:aws:iam::857517990941:policy/cert-secret-syncer-acm-rbe.monogres.dev
+managedNodeGroups:
+  - name: ng-workers-amd64
+    instanceType: c7a.2xlarge
+    minSize: 1
+    desiredCapacity: 2
+    maxSize: 10
+    labels:
+      buildcluster/role: worker
+    tags:
+      buildcluster/role: worker
+    iam:
+      withAddonPolicies:
+        autoScaler: true
+  - name: ng-workers-arm64
+    instanceType: c7g.2xlarge
+    minSize: 1
+    desiredCapacity: 2
+    maxSize: 10
+    labels:
+      buildcluster/role: worker
+    tags:
+      buildcluster/role: worker
+    iam:
+      withAddonPolicies:
+        autoScaler: true
+  - name: ng-storage
+    instanceType: m6a.large
+    minSize: 2
+    desiredCapacity: 2
+    maxSize: 2
+    labels:
+      buildcluster/role: storage
+    tags:
+      buildcluster/role: storage
+    iam:
+      withAddonPolicies:
+        ebs: true
+  - name: ng-other
+    instanceType: t3.medium
+    minSize: 1
+    desiredCapacity: 1
+    maxSize: 2
+    labels:
+      buildcluster/role: other
+    tags:
+      buildcluster/role: other
+    iam:
+      withAddonPolicies:
+        autoScaler: true
+        externalDNS: true
+addons:
+  - name: eks-pod-identity-agent
+  - name: vpc-cni
+    useDefaultPodIdentityAssociations: true
+  - name: aws-ebs-csi-driver
+    useDefaultPodIdentityAssociations: true

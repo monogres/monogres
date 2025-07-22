@@ -1,0 +1,53 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: rbe-ingress
+  namespace: buildbarn
+  labels:
+    name: rbe-ingress
+  annotations:
+    alb.ingress.kubernetes.io/group.name: rbe
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS": 443}]'
+    alb.ingress.kubernetes.io/load-balancer-name: rbe-ingress
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: alb
+  rules:
+    - host: rbe.monogres.dev
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend
+                port:
+                  name: grpc
+    - host: browser.rbe.monogres.dev
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: browser
+                port:
+                  name: http
+    - host: scheduler.rbe.monogres.dev
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: scheduler-browser
+                port:
+                  name: http
+  tls:
+    - hosts:
+        - rbe.monogres.dev
+        - browser.rbe.monogres.dev
+        - scheduler.rbe.monogres.dev
+      secretName: rbe-cert

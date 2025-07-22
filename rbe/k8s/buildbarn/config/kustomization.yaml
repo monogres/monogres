@@ -1,0 +1,16 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+configMapGenerator:
+  - name: buildbarn-config
+    namespace: buildbarn
+    files:
+      - browser.jsonnet
+      - common.libsonnet
+      - frontend.jsonnet
+      - mkShard.libsonnet
+      - runner.jsonnet
+      - scheduler.jsonnet
+      - storage.jsonnet
+      - worker.libsonnet
+      - worker-amd64.jsonnet
+      - worker-arm64.jsonnet

@@ -1,0 +1,21 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: rbe-cert
+  namespace: buildbarn
+spec:
+  commonName: rbe.monogres.dev
+  dnsNames:
+    - rbe.monogres.dev
+    - browser.rbe.monogres.dev
+    - scheduler.rbe.monogres.dev
+  issuerRef:
+    kind: ClusterIssuer
+    name: letsencrypt-prod
+  privateKey:
+    rotationPolicy: Always
+  secretName: rbe-cert
+  secretTemplate:
+    annotations:
+      cert-secret-syncer/backend: ACM
+      cert-secret-syncer/ingress-labels: name=rbe-ingress
