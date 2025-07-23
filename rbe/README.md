@@ -240,6 +240,13 @@ export EKS_CLUSTER_NAME="buildcluster"
 eksctl create cluster --config-file "eks/${EKS_CLUSTER_NAME}.yaml"
 ```
 
+For testing locally there's a `k3d` config that "simmulates" different roles
+and architectures to validate the deployment and node placement:
+
+```sh
+k3d cluster create --config "k3d/${EKS_CLUSTER_NAME}.yaml"
+```
+
 ## [Install AWS Load Balancer Controller](https://kubernetes-sigs.github.io/aws-load-balancer-controller/latest/deploy/installation/)
 
 ```sh
@@ -373,6 +380,10 @@ kubectl delete --kustomize k8s/buildbarn
 
 ```sh
 eksctl delete cluster --name="$EKS_CLUSTER_NAME" --region="$AWS_REGION"
+```
+
+```sh
+k3d cluster delete "$EKS_CLUSTER_NAME"
 ```
 
 ## Frequently used commands

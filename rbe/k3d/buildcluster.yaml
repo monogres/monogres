@@ -1,0 +1,40 @@
+apiVersion: k3d.io/v1alpha5
+kind: Simple
+image: docker.io/rancher/k3s:v1.31.5-k3s1 # the image is multi-arch
+metadata:
+  name: buildcluster
+servers: 1 # control plane nodes
+agents: 3 # 1 for all the scheduling, etc, and 2 for running the builds
+# https://k3d.io/v5.1.0/usage/exposing_services/
+ports:
+  - port: 8980:8980
+    nodeFilters:
+      - loadbalancer
+  - port: 9090:9090
+    nodeFilters:
+      - loadbalancer
+volumes:
+  # hack: https://github.com/k3d-io/k3d/discussions/1031
+  # NOTE: the volume file needs an ABSOLUTE path?
+  - volume: /foo/k3d/cpuinfo:/proc/cpuinfo
+    nodeFilters:
+      - agent:2
+options:
+  k3s:
+    nodeLabels:
+      # assign roles to schedule things where we want
+      - label: buildcluster/role=other
+        nodeFilters:
+          - agent:0
+      - label: buildcluster/role=worker
+        nodeFilters:
+          - agent:1
+          - agent:2
+      # simulate two architectures in the workers
+      - label: kubernetes.io/arch=arm64
+        nodeFilters:
+          - agent:0
+          - agent:1
+      - label: kubernetes.io/arch=amd64
+        nodeFilters:
+          - agent:2
