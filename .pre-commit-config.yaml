@@ -10,6 +10,7 @@ exclude: >-
   (?x)^(
     .*\.(patch|diff)$
     |.*/postgres/introspect/.*\.json$
+    |rbe/auth/.*\.json$
   )$
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks

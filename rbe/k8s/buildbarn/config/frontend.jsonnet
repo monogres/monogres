@@ -3,7 +3,26 @@ local common = import 'common.libsonnet';
 {
   grpcServers: [{
     listenAddresses: [':8980'],
-    authenticationPolicy: { allow: {} },
+    authenticationPolicy: {
+      jwt: {
+        jwksInline: {
+          keys: [
+            {
+              use: 'sig',
+              kty: 'OKP',
+              kid: 'V05_j3uDy6HsnWV-3hVIBFPUlvG1G3LEDAJIqap0ojk',
+              crv: 'Ed25519',
+              alg: 'EdDSA',
+              x: 'F9AKe-FxYDBj3iVLhBPYclPm0xbGYsblAyY1KpTbKk0',
+            },
+          ],
+        },
+        maximumCacheSize: 1000,
+        cacheReplacementPolicy: 'LEAST_RECENTLY_USED',
+        metadataExtractionJmespathExpression: '`{}`',
+        claimsValidationJmespathExpression: '`true`',
+      },
+    },
   }],
   schedulers: {
     '': {

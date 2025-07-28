@@ -232,6 +232,53 @@ service account in the `iam` section of the EKS cluster config
 (`eks/buildcluster.yaml`) so that it's attached to the service account on
 cluster creation.
 
+## JWT Authentication
+
+First, install the [`step` CLI]. Then, generate pub/priv keys with:
+
+```sh
+./auth/auth.sh gen_keys
+```
+
+The public key is then used in the Buildbarn `frontend.jsonnet` config:
+
+```jsonnet
+authenticationPolicy: {
+    jwt: {
+        jwksInline: {
+            keys: [
+                {
+                    # content of pub.json
+                },
+            ],
+        },
+    },
+},
+```
+
+Finally, generate user tokens with:
+
+```sh
+./auth/auth.sh gen_token username 12 months
+```
+
+These tokens are then used on the Bazel side:
+
+```sh
+bazel build --remote_header=authorization="Bearer <TOKEN>" ...
+```
+
+For more details, see:
+
+* [Slack 🧵]
+* [buildbarn/bb-storage/pkg/proto/configuration/jwt/jwt.proto#L27-L34]
+* [buildbarn/bb-storage/pkg/proto/configuration/grpc/grpc.proto#L295-L377]
+
+[`step` CLI]: https://smallstep.com/docs/step-cli/index.html
+[Slack 🧵]: https://buildteamworld.slack.com/archives/CD6HZC750/p1749216293652909?thread_ts=1748959560.363499&cid=CD6HZC750
+[buildbarn/bb-storage/pkg/proto/configuration/jwt/jwt.proto#L27-L34]: https://github.com/buildbarn/bb-storage/blob/89b92028196937d1fb26a589637bdf8a3340d81f/pkg/proto/configuration/jwt/jwt.proto#L27-L34
+[buildbarn/bb-storage/pkg/proto/configuration/grpc/grpc.proto#L295-L377]: https://github.com/buildbarn/bb-storage/blob/89b92028196937d1fb26a589637bdf8a3340d81f/pkg/proto/configuration/grpc/grpc.proto#L295-L377
+
 ## Create the Kubernetes cluster
 
 ```sh
@@ -361,6 +408,7 @@ Test with:
 
 ```sh
 grpcurl \
+    -H "Authorization: Bearer $TOKEN" \
     -d '{}' \
     "$SUBDOMAIN:443" \
     build.bazel.remote.execution.v2.Capabilities/GetCapabilities
