@@ -41,13 +41,24 @@ build:debug --explain=/tmp/verbose_explanations
 build:debug --sandbox_debug
 build:debug --subcommands
 
-common:linux-amd64 --platforms=//toolchains:linux_amd64_rbe
-common:linux-amd64 --extra_execution_platforms=//toolchains:linux_amd64_rbe
 common:linux-amd64 --extra_toolchains=@llvm_toolchain_system_linux_amd64//:cc-toolchain-x86_64-linux
+common:linux-arm64 --extra_toolchains=@llvm_toolchain_system_linux_arm64//:cc-toolchain-aarch64-linux
 
-common:linux-arm64 --platforms=//toolchains:linux_arm64_rbe
-common:linux-arm64 --extra_execution_platforms=//toolchains:linux_arm64_rbe
-common:linux-amd64 --extra_toolchains=@llvm_toolchain_system_linux_arm64//:cc-toolchain-aarch64-linux
+common:linux-amd64-buildbuddy --config=linux-amd64
+common:linux-amd64-buildbuddy --platforms=//toolchains:linux_amd64_rbe_buildbuddy
+common:linux-amd64-buildbuddy --extra_execution_platforms=//toolchains:linux_amd64_rbe_buildbuddy
+
+common:linux-arm64-buildbuddy --config=linux-arm64
+common:linux-arm64-buildbuddy --platforms=//toolchains:linux_arm64_rbe_buildbuddy
+common:linux-arm64-buildbuddy --extra_execution_platforms=//toolchains:linux_arm64_rbe_buildbuddy
+
+common:linux-amd64-buildbarn --config=linux-amd64
+common:linux-amd64-buildbarn --platforms=//toolchains:linux_amd64_rbe_buildbarn
+common:linux-amd64-buildbarn --extra_execution_platforms=//toolchains:linux_amd64_rbe_buildbarn
+
+common:linux-arm64-buildbarn --config=linux-arm64
+common:linux-arm64-buildbarn --platforms=//toolchains:linux_arm64_rbe_buildbarn
+common:linux-arm64-buildbarn --extra_execution_platforms=//toolchains:linux_arm64_rbe_buildbarn
 
 build:remote --define=EXECUTOR=remote
 build:remote --strategy=remote
@@ -59,11 +70,15 @@ build:remote --noslim_profile
 build:remote --experimental_profile_include_target_label
 build:remote --experimental_profile_include_primary_output
 build:remote --noremote_upload_local_results
+build:remote --remote_timeout=5m
 
 build:remote-buildbuddy --config=remote --config=bes-buildbuddy
 build:remote-buildbuddy --remote_executor=grpcs://remote.buildbuddy.io
 build:remote-buildbuddy --experimental_remote_cache_compression
 build:remote-buildbuddy --experimental_remote_cache_compression_threshold=100  # bytes
+
+build:remote-buildbarn --config=remote --config=bes-buildbuddy
+build:remote-buildbarn --remote_executor=grpcs://rbe.monogres.dev
 
 # custom bazelrc where each user can add their customizations and/or
 # e.g. authentication parts that shouldn't be committed to the repo.

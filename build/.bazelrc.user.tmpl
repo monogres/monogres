@@ -10,3 +10,8 @@
 # see: https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens
 # build:remote-buildbuddy --remote_exec_header=x-buildbuddy-platform.container-registry-username=foo
 # build:remote-buildbuddy --remote_exec_header=x-buildbuddy-platform.container-registry-password=ghp_ABCDEFG12345
+
+# NOTE:
+# <TOKEN> is a JWT token generated with the Buildbarn private key, see
+# rbe/README.md and rbe/auth.auth.sh
+# build:remote-buildbarn --remote_exec_header=authorization="Bearer <TOKEN>"

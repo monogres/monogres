@@ -6,34 +6,66 @@ IMAGE_DIGEST = "sha256:104c826449ce4419b19439b21c0534a99ccc11778be9a681504b605f6
 
 CONTAINER_IMAGE = "docker://%s/%s@%s" % (IMAGE_REGISTRY, IMAGE_NAME, IMAGE_DIGEST)
 
+EXEC_PROPERTIES_COMMON = {
+    "OSFamily": "linux",
+    "container-image": CONTAINER_IMAGE,
+}
+
 platform(
-    name = "linux_amd64_rbe",
+    name = "linux_amd64",
     constraint_values = [
         "@platforms//cpu:x86_64",
         "@platforms//os:linux",
         "@bazel_tools//tools/cpp:clang",
     ],
-    exec_properties = {
-        "Arch": "amd64",
-        "OSFamily": "Linux",
-        "container-image": CONTAINER_IMAGE,
-        "dockerNetwork": "off",
-        "nonroot-workspace": "true",
-    },
 )
 
 platform(
-    name = "linux_arm64_rbe",
+    name = "linux_arm64",
     constraint_values = [
         "@platforms//cpu:aarch64",
         "@platforms//os:linux",
         "@bazel_tools//tools/cpp:clang",
     ],
+)
+
+# BuildBuddy
+
+EXEC_PROPERTIES_BUILDBUDDY = {
+    "dockerNetwork": "off",
+    "nonroot-workspace": "true",
+}
+
+platform(
+    name = "linux_amd64_rbe_buildbuddy",
+    exec_properties = {
+        "Arch": "amd64",
+    } | EXEC_PROPERTIES_COMMON | EXEC_PROPERTIES_BUILDBUDDY,
+    parents = ["linux_amd64"],
+)
+
+platform(
+    name = "linux_arm64_rbe_buildbuddy",
     exec_properties = {
         "Arch": "arm64",
-        "OSFamily": "Linux",
-        "container-image": CONTAINER_IMAGE,
-        "dockerNetwork": "off",
-        "nonroot-workspace": "true",
-    },
+    } | EXEC_PROPERTIES_COMMON | EXEC_PROPERTIES_BUILDBUDDY,
+    parents = ["linux_arm64"],
+)
+
+# Buildbarn
+
+platform(
+    name = "linux_amd64_rbe_buildbarn",
+    exec_properties = {
+        "Arch": "amd64",
+    } | EXEC_PROPERTIES_COMMON,
+    parents = ["linux_amd64"],
+)
+
+platform(
+    name = "linux_arm64_rbe_buildbarn",
+    exec_properties = {
+        "Arch": "arm64",
+    } | EXEC_PROPERTIES_COMMON,
+    parents = ["linux_arm64"],
 )
