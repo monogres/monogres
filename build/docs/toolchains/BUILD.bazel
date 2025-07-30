@@ -1,0 +1,11 @@
+load("@aspect_bazel_lib//lib:docs.bzl", "stardoc_with_diff_test", "update_docs")
+
+package(default_visibility = ["//:__subpackages__"])
+
+stardoc_with_diff_test(
+    name = "template_vars",
+    bzl_library_target = "@monogres//toolchains:template_vars",
+    renderer = "//:renderer",
+)
+
+update_docs(name = "update")

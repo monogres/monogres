@@ -1,0 +1,9 @@
+load("@rules_java//java:defs.bzl", "java_binary")
+
+package(default_visibility = ["//:__subpackages__"])
+
+java_binary(
+    name = "renderer",
+    main_class = "com/google/devtools/build/stardoc/renderer/RendererMain",
+    runtime_deps = ["@stardoc-prebuilt//jar"],
+)

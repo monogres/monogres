@@ -54,6 +54,7 @@ bazel test --build_tests_only //...
 
 ## 📄 docs
 
-<ADD_DOCS>
+See [`docs/README.md`].
 
+[`docs/README.md`]: docs/README.md
 [target patterns]: https://bazel.build/run/build#specifying-build-targets

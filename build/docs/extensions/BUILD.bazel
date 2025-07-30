@@ -1,0 +1,23 @@
+load("@aspect_bazel_lib//lib:docs.bzl", "stardoc_with_diff_test", "update_docs")
+
+package(default_visibility = ["//:__subpackages__"])
+
+stardoc_with_diff_test(
+    name = "features",
+    bzl_library_target = "@monogres//extensions:features",
+    renderer = "//:renderer",
+)
+
+stardoc_with_diff_test(
+    name = "cfg",
+    bzl_library_target = "@monogres//extensions:cfg",
+    renderer = "//:renderer",
+)
+
+stardoc_with_diff_test(
+    name = "pgxs_build",
+    bzl_library_target = "@monogres//extensions:pgxs_build",
+    renderer = "//:renderer",
+)
+
+update_docs(name = "update")

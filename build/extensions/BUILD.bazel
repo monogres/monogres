@@ -1,0 +1,32 @@
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files([
+    "features.bzl",
+    "cfg.bzl",
+    "pgxs_build.bzl",
+    "all.bzl",
+])
+
+bzl_library(
+    name = "features",
+    srcs = ["features.bzl"],
+    deps = [
+        "@version_utils//spec",
+        "@version_utils//version",
+    ],
+)
+
+bzl_library(
+    name = "cfg",
+    srcs = ["cfg.bzl"],
+    deps = [
+        ":features",
+    ],
+)
+
+bzl_library(
+    name = "pgxs_build",
+    srcs = ["pgxs_build.bzl"],
+)

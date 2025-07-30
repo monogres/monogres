@@ -11,6 +11,9 @@ bazel_dep(name = "aspect_bazel_lib", version = "2.15.3")
 bazel_dep(name = "bazel_skylib", version = "1.7.1")
 bazel_dep(name = "download_archives", version = "0.1.0")
 bazel_dep(name = "platforms", version = "1.0.0")
+
+# see https://bazelbuild.slack.com/archives/CA31HN1T3/p1753021278448849
+bazel_dep(name = "protobuf", version = "31.1")
 bazel_dep(name = "rules_bison", version = "0.4")
 bazel_dep(name = "rules_distroless", version = "0.5.1")
 bazel_dep(name = "rules_flex", version = "0.4")

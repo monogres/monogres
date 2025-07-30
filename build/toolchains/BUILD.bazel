@@ -1,3 +1,16 @@
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files([
+    "template_vars.bzl",
+])
+
+bzl_library(
+    name = "template_vars",
+    srcs = ["template_vars.bzl"],
+)
+
 IMAGE_REGISTRY = "ghcr.io"
 
 IMAGE_NAME = "rpostgres/rpostgres/debian-rbe-pgdeps"

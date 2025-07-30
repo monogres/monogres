@@ -1,5 +1,60 @@
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load(":cfg.bzl", "CFG")
 load(":pg_build.bzl", "pg_build_all")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files([
+    "version.bzl",
+    "build_options.bzl",
+    "cfg.bzl",
+    "pg_build.bzl",
+    "toolchain.bzl",
+])
+
+bzl_library(
+    name = "version",
+    srcs = ["version.bzl"],
+    deps = [
+        "@version_utils//spec",
+        "@version_utils//version",
+    ],
+)
+
+bzl_library(
+    name = "build_options",
+    srcs = ["build_options.bzl"],
+    deps = [
+        ":version",
+    ],
+)
+
+bzl_library(
+    name = "cfg",
+    srcs = ["cfg.bzl"],
+    deps = [
+        ":build_options",
+        "@pg_src//:repo",
+    ],
+)
+
+bzl_library(
+    name = "pg_build",
+    srcs = ["pg_build.bzl"],
+    deps = [
+        ":toolchain",
+        "@protobuf//bazel:cc_proto_library_bzl",
+        "@rules_foreign_cc//foreign_cc:meson",
+    ],
+)
+
+bzl_library(
+    name = "toolchain",
+    srcs = ["toolchain.bzl"],
+    deps = [
+        "//toolchains:template_vars",
+    ],
+)
 
 pg_build_all(
     name = CFG.name,

@@ -11,3 +11,7 @@
 # have a rather minimal footprint:
 # https://github.com/search?type=code&q=NOT+is%3Afork+path%3A*.MODULE.bazel
 *.MODULE.bazel linguist-language=Starlark
+
+# mark the docs (except README) as generated to they are collapsed in GH PRs
+docs/**/*.md linguist-generated=true
+docs/README.md linguist-generated=false

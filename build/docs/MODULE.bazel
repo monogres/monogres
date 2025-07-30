@@ -1,0 +1,29 @@
+module(
+    name = "docs",
+    bazel_compatibility = [">=7.1.0"],
+)
+
+bazel_dep(name = "monogres", version = "", dev_dependency = True)
+bazel_dep(name = "aspect_bazel_lib", version = "2.20.0", dev_dependency = True)
+bazel_dep(name = "bazel_skylib", version = "1.8.1", dev_dependency = True)
+bazel_dep(name = "platforms", version = "1.0.0", dev_dependency = True)
+bazel_dep(name = "rules_java", version = "8.11.0", dev_dependency = True)
+bazel_dep(name = "rules_shell", version = "0.4.1", dev_dependency = True)
+
+local_path_override(
+    module_name = "monogres",
+    path = "..",
+)
+
+local_path_override(
+    module_name = "starlark_utils",
+    path = "../starlark_utils",
+)
+
+http_jar = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_jar")
+
+http_jar(
+    name = "stardoc-prebuilt",
+    integrity = "sha256-jDi5ITmziwwiHCsfd8v0UOoraWXIAfICIll+wbpg/vE=",
+    urls = ["https://github.com/alexeagle/stardoc-prebuilt/releases/download/v0.7.1/renderer_deploy.jar"],
+)

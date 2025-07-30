@@ -1,5 +1,31 @@
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load(":cfg.bzl", "CFGS")
 load(":pgext_contrib.bzl", "pgext_contrib_all")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files([
+    "cfg.bzl",
+    "pgext_contrib.bzl",
+])
+
+bzl_library(
+    name = "cfg",
+    srcs = ["cfg.bzl"],
+    deps = [
+        "//postgres:cfg",
+        "@pg_introspect//:defs",
+    ],
+)
+
+bzl_library(
+    name = "pgext_contrib",
+    srcs = ["pgext_contrib.bzl"],
+    deps = [
+        "//utils:declare_outputs",
+        "@aspect_bazel_lib//lib:tar",
+    ],
+)
 
 pgext_contrib_all(
     name = "contrib",
