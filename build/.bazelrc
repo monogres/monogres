@@ -13,6 +13,9 @@ common:debug --nokeep_going
 
 common:remote --ui_actions_shown 100
 
+# Add mirrors for certain download URLs
+common --experimental_downloader_config=.bazel_downloader.cfg
+
 build --nostamp
 build --incompatible_strict_action_env
 build --reuse_sandbox_directories
