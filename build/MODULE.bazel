@@ -7,7 +7,7 @@ module(
     compatibility_level = 0,
 )
 
-bazel_dep(name = "aspect_bazel_lib", version = "2.15.3")
+bazel_dep(name = "bazel_lib", version = "3.0.0")
 bazel_dep(name = "bazel_skylib", version = "1.7.1")
 bazel_dep(name = "download_archives", version = "0.1.0")
 bazel_dep(name = "platforms", version = "1.0.0")
@@ -21,6 +21,7 @@ bazel_dep(name = "rules_foreign_cc", version = "0.15.0")
 bazel_dep(name = "rules_m4", version = "0.3")
 bazel_dep(name = "rules_python", version = "1.0.0")
 bazel_dep(name = "starlark_utils", version = "0.0.1")
+bazel_dep(name = "tar.bzl", version = "0.6.0")
 bazel_dep(name = "version_utils", version = "0.1.0")
 
 bazel_dep(name = "toolchains_llvm", version = "1.4.0", dev_dependency = True)
@@ -88,8 +89,7 @@ m4.repository(
 )
 use_repo(m4, "m4")
 
-bazel_lib_toolchains = use_extension("@aspect_bazel_lib//lib:extensions.bzl", "toolchains")
-bazel_lib_toolchains.tar()
+bazel_lib_toolchains = use_extension("@tar.bzl//tar:extensions.bzl", "toolchains")
 use_repo(bazel_lib_toolchains, "bsd_tar_toolchains")
 
 register_toolchains("@bsd_tar_toolchains//:all")

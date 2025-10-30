@@ -23,7 +23,8 @@ bzl_library(
     srcs = ["pgext_contrib.bzl"],
     deps = [
         "//utils:declare_outputs",
-        "@aspect_bazel_lib//lib:tar",
+        "@tar.bzl//tar:mtree",
+        "@tar.bzl//tar:tar",
     ],
 )
 

@@ -224,8 +224,8 @@ def pgxs_build(name, pgxs_src, dependencies, pg_version):
             tar_cmd = "$(BSDTAR_BIN)",
             # NOTE: https://reproducible-builds.org/docs/archives/
             # We are using bsd tar which has less flags available. Consider
-            # writing an mtree and/or find a way to use aspect_bazel_lib tar
-            # rule like we did in extensions/contrib
+            # writing an mtree and/or find a way to use tar.bzl tar rule
+            # like we did in extensions/contrib
             tar_args = "\n".join([
                 "--format=posix",
                 "--numeric-owner",

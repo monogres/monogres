@@ -6,7 +6,8 @@ rules isolate and collect the relevant files for each extension and package
 them into individual tar archives for distribution or reuse.
 """
 
-load("@aspect_bazel_lib//lib:tar.bzl", "mtree_mutate", "mtree_spec", "tar")
+load("@tar.bzl//tar:mtree.bzl", "mtree_mutate", "mtree_spec")
+load("@tar.bzl//tar:tar.bzl", "tar")
 load("//utils:declare_outputs.bzl", "declare_outputs")
 
 def pgext_contrib(name, files, pg_target):
