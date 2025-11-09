@@ -2,29 +2,29 @@ module(
     name = "monogres",
     # https://bazel.build/external/faq#module-versioning-best-practices
     version = "",
-    bazel_compatibility = [">=7.3.1"],
+    bazel_compatibility = [">=8.4.2"],
     # https://bazel.build/external/faq#incrementing-compatibility-level
     compatibility_level = 0,
 )
 
 bazel_dep(name = "bazel_lib", version = "3.0.0")
-bazel_dep(name = "bazel_skylib", version = "1.7.1")
+bazel_dep(name = "bazel_skylib", version = "1.8.2")
 bazel_dep(name = "download_archives", version = "0.1.0")
 bazel_dep(name = "platforms", version = "1.0.0")
 
 # see https://bazelbuild.slack.com/archives/CA31HN1T3/p1753021278448849
 bazel_dep(name = "protobuf", version = "31.1")
 bazel_dep(name = "rules_bison", version = "0.4")
-bazel_dep(name = "rules_distroless", version = "0.5.1")
+bazel_dep(name = "rules_distroless", version = "0.6.1")
 bazel_dep(name = "rules_flex", version = "0.4")
-bazel_dep(name = "rules_foreign_cc", version = "0.15.0")
+bazel_dep(name = "rules_foreign_cc", version = "0.15.1")
 bazel_dep(name = "rules_m4", version = "0.3")
-bazel_dep(name = "rules_python", version = "1.0.0")
+bazel_dep(name = "rules_python", version = "1.6.3")
 bazel_dep(name = "starlark_utils", version = "0.0.1")
 bazel_dep(name = "tar.bzl", version = "0.6.0")
 bazel_dep(name = "version_utils", version = "0.1.0")
 
-bazel_dep(name = "toolchains_llvm", version = "1.4.0", dev_dependency = True)
+bazel_dep(name = "toolchains_llvm", version = "1.5.0", dev_dependency = True)
 
 local_path_override(
     module_name = "starlark_utils",

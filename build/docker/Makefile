@@ -25,11 +25,11 @@ BASE_IMAGE=debian
 # https://hub.docker.com/_/debian/tags
 BASE_IMAGE_TAG=stable-20250113-slim
 # https://github.com/bazelbuild/bazel
-BAZEL_VERSION := $(shell cat $(REPO)/.bazelversion 2>/dev/null || echo 7.3.1)
+BAZEL_VERSION := $(shell cat $(REPO)/.bazelversion 2>/dev/null || echo 8.4.2)
 # https://github.com/reproducible-containers/repro-sources-list.sh
 REPRODUCIBLE_CONTAINERS_VERSION ?= 0.1.4
 # https://github.com/bazelbuild/bazelisk
-BAZELISK_VERSION ?= 1.20.0
+BAZELISK_VERSION ?= 1.27.0
 
 DEPS_CC_TOOLCHAIN = \
 	llvm-14 clang-14 lld-14 \
