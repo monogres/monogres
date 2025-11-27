@@ -1,0 +1,54 @@
+diff --git a/src/backend/columnar/Makefile b/src/backend/columnar/Makefile
+--- a/src/backend/columnar/Makefile	2025-11-27 16:04:26.803285835 +0000
++++ b/src/backend/columnar/Makefile	2025-11-27 16:02:27.986142558 +0000
+@@ -31,7 +31,7 @@
+ 	@# -P is used to inhibit generation of linemarkers in the output from the preprocessor.
+ 	@# -undef is used to not predefine any system-specific or GCC-specific macros.
+ 	@# `man cpp` for further information
+-	cd $(citus_abs_srcdir) && cpp -undef -w -P -MMD -MP -MF$(SQL_DEPDIR)/$(*F).Po -MT$@ $< > $@
++	cd $(citus_abs_srcdir) && $(CPP) -E -undef -w -P -MMD -MP -MF$(SQL_DEPDIR)/$(*F).Po -MT$@ $< > $@
+ 
+ $(generated_downgrade_sql_files): $(citus_abs_srcdir)/build/sql/%: sql/downgrades/%
+ 	@mkdir -p $(citus_abs_srcdir)/$(SQL_DEPDIR) $(citus_abs_srcdir)/$(SQL_BUILDDIR)
+@@ -40,7 +40,7 @@
+ 	@# -P is used to inhibit generation of linemarkers in the output from the preprocessor.
+ 	@# -undef is used to not predefine any system-specific or GCC-specific macros.
+ 	@# `man cpp` for further information
+-	cd $(citus_abs_srcdir) && cpp -undef -w -P -MMD -MP -MF$(SQL_DEPDIR)/$(*F).Po -MT$@ $< > $@
++	cd $(citus_abs_srcdir) && $(CPP) -E -undef -w -P -MMD -MP -MF$(SQL_DEPDIR)/$(*F).Po -MT$@ $< > $@
+ 
+ .PHONY: install install-downgrades install-all
+ 
+diff --git a/src/backend/distributed/Makefile b/src/backend/distributed/Makefile
+--- a/src/backend/distributed/Makefile	2025-11-27 16:04:26.803113198 +0000
++++ b/src/backend/distributed/Makefile	2025-11-27 16:02:27.986013755 +0000
+@@ -68,7 +68,7 @@
+ 	@# -P is used to inhibit generation of linemarkers in the output from the preprocessor.
+ 	@# -undef is used to not predefine any system-specific or GCC-specific macros.
+ 	@# `man cpp` for further information
+-	cd $(citus_abs_srcdir) && cpp -undef -w -P -MMD -MP -MF$(SQL_DEPDIR)/$(*F).Po -MT$@ $< > $@
++	cd $(citus_abs_srcdir) && $(CPP) -E -undef -w -P -MMD -MP -MF$(SQL_DEPDIR)/$(*F).Po -MT$@ $< > $@
+ 
+ $(generated_downgrade_sql_files): $(citus_abs_srcdir)/build/sql/%: sql/downgrades/%
+ 	@mkdir -p $(citus_abs_srcdir)/$(SQL_DEPDIR) $(citus_abs_srcdir)/$(SQL_BUILDDIR)
+@@ -77,7 +77,7 @@
+ 	@# -P is used to inhibit generation of linemarkers in the output from the preprocessor.
+ 	@# -undef is used to not predefine any system-specific or GCC-specific macros.
+ 	@# `man cpp` for further information
+-	cd $(citus_abs_srcdir) && cpp -undef -w -P -MMD -MP -MF$(SQL_DEPDIR)/$(*F).Po -MT$@ $< > $@
++	cd $(citus_abs_srcdir) && $(CPP) -E -undef -w -P -MMD -MP -MF$(SQL_DEPDIR)/$(*F).Po -MT$@ $< > $@
+ 
+ SQL_Po_files := $(wildcard $(SQL_DEPDIR)/*.Po)
+ ifneq (,$(SQL_Po_files))
+diff --git a/src/test/regress/Makefile b/src/test/regress/Makefile
+--- a/src/test/regress/Makefile	2025-11-27 16:04:26.803365021 +0000
++++ b/src/test/regress/Makefile	2025-11-27 16:02:27.986187533 +0000
+@@ -80,7 +80,7 @@
+ 	@# -undef is used to not predefine any system-specific or GCC-specific macros.
+ 	@# `man cpp` for further information
+ 	@# sed is used to strip the final // comments, because OSX cpp is weird
+-	cd $(citus_abs_srcdir) && cpp -undef -w -P -MMD -MP -MF$(ISOLATION_DEPDIR)/$(*F).Po -MT$@ $< | sed '/^\/\//d' | sed '/^$$/d' > $@
++	cd $(citus_abs_srcdir) && $(CPP) -E -undef -w -P -MMD -MP -MF$(ISOLATION_DEPDIR)/$(*F).Po -MT$@ $< | sed '/^\/\//d' | sed '/^$$/d' > $@
+ 
+ 
+ Isolation_Po_files := $(wildcard $(ISOLATION_DEPDIR)/*.Po)
