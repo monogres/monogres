@@ -2,7 +2,7 @@
 Rules to build Postgres PGXS extensions from source.
 """
 
-def pgxs_build(name, pgxs_src, dependencies, pg_version):
+def pgxs_build(name, pgxs_src, dependencies, pg_version, debug = False):
     """
     Generates a Bazel target to build a PGXS extension with the [PGXS build system].
 
@@ -15,6 +15,7 @@ def pgxs_build(name, pgxs_src, dependencies, pg_version):
             extension.
         pg_version (struct): `struct` containing metadata to select the
             Postgres build that will be used when building the extension.
+        debug (bool): If `True`, prints a debug message for each command executed.
     """
     tar_file, log_file = ["%s%s" % (name, file) for file in (".tar", ".log")]
 
@@ -95,12 +96,29 @@ def pgxs_build(name, pgxs_src, dependencies, pg_version):
             echo "pgxs_src: $$pgxs_src"
             echo "pgxs_src_copy: $$pgxs_src_copy"
 
+            if [ -f "$$pgxs_src_copy/configure" ]
+            then
+                echo
+                echo "configure"
+                echo
+                env -C "$$pgxs_src_copy" \
+                    CC="$$cc" \
+                    PG_CONFIG="$$EXT_BUILD_ROOT/$(PG_CONFIG)" \
+                    CFLAGS="$${{pg_cflags[*]}}" \
+                    CPPFLAGS="$${{pg_cflags[*]}}" \
+                    LDFLAGS="$${{pg_ldflags[*]}}" \
+                    PG_CONFIG="$$EXT_BUILD_ROOT/$(PG_CONFIG)" \
+                    "$$pgxs_src_copy/configure" || return $$?
+            fi
+
             echo
             echo "make"
             echo
             "$$EXT_BUILD_ROOT/$(MAKE)" \
                 -C "$$pgxs_src_copy" \
                 CC="$$cc" \
+                CXX="$$cc" \
+                CPP="$$cc" \
                 PG_CONFIG="$$EXT_BUILD_ROOT/$(PG_CONFIG)" \
                 PG_CFLAGS="$${{pg_cflags[*]}}" \
                 PG_LDFLAGS="$${{pg_ldflags[*]}}" \
@@ -112,8 +130,11 @@ def pgxs_build(name, pgxs_src, dependencies, pg_version):
             "$$EXT_BUILD_ROOT/$(MAKE)" \
                 -C "$$pgxs_src_copy" \
                 CC="$$cc" \
+                CXX="$$cc" \
+                CPP="$$cc" \
                 PG_CONFIG="$$EXT_BUILD_ROOT/$(PG_CONFIG)" \
                 PG_CFLAGS="$${{pg_cflags[*]}}" \
+                PG_CPPFLAGS="$${{pg_cflags[*]}}" \
                 PG_LDFLAGS="$${{pg_ldflags[*]}}" \
                 USE_PGXS=1 \
                 DESTDIR="$$installdir" \
@@ -197,6 +218,9 @@ def pgxs_build(name, pgxs_src, dependencies, pg_version):
 
         trap errors ERR
 
+        DEBUG="{debug}"
+        [ "$$DEBUG" != True ] || set -x
+
         # =================================================================== #
 
         export EXT_BUILD_ROOT="$$PWD"
@@ -239,6 +263,7 @@ def pgxs_build(name, pgxs_src, dependencies, pg_version):
                 "$(locations %s)" % dependency
                 for dependency in dependencies
             ]),
+            debug = "%s" % debug,
         ),
         target_compatible_with = select({
             # bsdtar.exe: -s is not supported by this version of bsdtar
