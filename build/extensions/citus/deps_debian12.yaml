@@ -1,0 +1,13 @@
+version: 1
+sources:
+  - channel: stable main
+    url: https://snapshot-cloudflare.debian.org/archive/debian/20240210T223313Z
+  - channel: stable-security main
+    url: https://snapshot-cloudflare.debian.org/archive/debian-security/20240210T223313Z
+  - channel: stable-updates main
+    url: https://snapshot-cloudflare.debian.org/archive/debian/20240210T223313Z/
+archs:
+  - amd64
+  - arm64
+packages:
+  - libcurl4-openssl-dev

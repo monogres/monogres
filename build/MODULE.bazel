@@ -127,16 +127,31 @@ introspect(
 
 # extensions/
 PG_EXTENSIONS = [
-    "noset",
-    "sslutils",
+    [
+        "noset",
+        {
+        },
+    ],
+    [
+        "sslutils",
+        {
+        },
+    ],
+    [
+        "citus",
+        {
+            "//extensions/citus/patches:0001-13.2.0-fix-hardcoded-cpp.patch": ">=13.2.0/*",
+        },
+    ],
 ]
 
 [
     download_archives(
         name = "pgext_%s" % ext,
         index = "//extensions/%s:repo.json" % ext,
+        patches = patches,
     )
-    for ext in PG_EXTENSIONS
+    for ext, patches in PG_EXTENSIONS
 ]
 
 apt = use_extension("@rules_distroless//apt:extensions.bzl", "apt")
@@ -146,3 +161,9 @@ apt.install(
     nolock = True,
 )
 use_repo(apt, "pgext_sslutils_deps_debian12")
+apt.install(
+    name = "pgext_citus_deps_debian12",
+    manifest = "//extensions/citus:deps_debian12.yaml",
+    nolock = True,
+)
+use_repo(apt, "pgext_citus_deps_debian12")

@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "sources": {
+    "gh": {
+      "tag": "v{version}",
+      "gh_org": "citusdata",
+      "name": "citus",
+      "filename": "{tag}",
+      "strip_prefix": "{name}-{version}",
+      "url": "https://github.com/citusdata/citus/archive/refs/tags/{filename}.tar.gz"
+    }
+  },
+  "versions": {
+    "13.2.0": {
+      "sha256": "82cc117bb1000da9eeea1499ee9a8f2706feccc19e2c5ca623274793d98a217a"
+    }
+  },
+  "metadata": {
+    "compatible_with": {
+      "13.2.0": "<=17"
+    }
+  }
+}
