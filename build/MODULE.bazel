@@ -109,10 +109,10 @@ download_archives(
     patches = {
         "//postgres/patches:0001-16.0-fix-pgflex-propagate-environment-to-flex-subprocess.patch": "*",
         "//postgres/patches:0002-16.0-fix-pgflex-suppress-line-directives.patch": "*",
-        "//postgres/patches:0003-16.0-fix-pgflex-flex-2.6.4-noline-bugs.patch": "*",
+        "//postgres/patches:0003-16.0-fix-pgflex-flex-2.6.4-noline-bugs.patch": "<17.*/*",
         "//postgres/patches:0004-16.0-feat-prefix_distro-option.patch": "*",
-        "//postgres/patches:0005-16.0-hack-remove-execroot-from-CC.patch": "16.0/*",
-        "//postgres/patches:0005-17.0-hack-remove-execroot-from-CC.patch": "17.0/*",
+        "//postgres/patches:0005-16.0-hack-remove-execroot-from-CC.patch": "16.*/*",
+        "//postgres/patches:0005-17.0-hack-remove-execroot-from-CC.patch": ">=17.*/*",
     },
     version_scheme = "pgver",
 )

@@ -10,6 +10,14 @@
     }
   },
   "versions": {
+    "18.1": {
+      "tag": "REL_18_1",
+      "sha256": "bde6fc3ea30063a0f9bc721b9a6c63527606edb47d24e79889cebae9f91ee1e2"
+    },
+    "18.0": {
+      "tag": "REL_18_0",
+      "sha256": "d9071ab45c2c45a3c8371495539ea7d2ed4d8035f72de20cb7cddfe23081cb82"
+    },
     "17.7": {
       "tag": "REL_17_7",
       "sha256": "fb2c2c2d2f6bb8e0b72826fec1204158a567b17792788cd4357ab95b8e40ab7f"
@@ -95,9 +103,27 @@
     "build_options": {
       "injection_points": {
         "compatible": ">=17.0"
+      },
+      "atomics": {
+        "compatible": "<18.0"
+      },
+      "spinlocks": {
+        "compatible": "<18.0"
       }
     },
     "introspect": {
+      "18.1": {
+        "barebones": "//postgres/introspect/json:postgres~18.1~barebones.json",
+        "minimal": "//postgres/introspect/json:postgres~18.1~minimal.json",
+        "regular": "//postgres/introspect/json:postgres~18.1~regular.json",
+        "full": "//postgres/introspect/json:postgres~18.1~full.json"
+      },
+      "18.0": {
+        "barebones": "//postgres/introspect/json:postgres~18.0~barebones.json",
+        "minimal": "//postgres/introspect/json:postgres~18.0~minimal.json",
+        "regular": "//postgres/introspect/json:postgres~18.0~regular.json",
+        "full": "//postgres/introspect/json:postgres~18.0~full.json"
+      },
       "17.7": {
         "barebones": "//postgres/introspect/json:postgres~17.7~barebones.json",
         "minimal": "//postgres/introspect/json:postgres~17.7~minimal.json",
