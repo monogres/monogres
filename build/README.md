@@ -33,6 +33,12 @@ quick summary:
     confusing, this syntax does allow the familiar `:all` wildcard to be used
     for typical builds avoiding files that are usually not wanted.
 
+You may list all the targets using the following command:
+
+```sh
+bazel query ...
+```
+
 ### Build all targets *and run all tests*
 
 ```sh
@@ -51,6 +57,34 @@ To avoid this behavior and **only run the tests** in the repo, do:
 ```sh
 bazel test --build_tests_only //...
 ```
+
+### Build image to run bazel builds
+
+Run `make -C docker gen-image` to generate rbe-pgdeps image and
+`make -C docker gen-image TARGET=debug` to make the debug image
+(it will build all the rest since debug depends on all of the previous images).
+
+To build image for a specific platform use `BUILD_PLATFORMS` variable like below:
+
+```sh
+make -C docker gen-image BUILD_PLATFORMS=linux/amd64
+```
+
+> **NOTE**: in Linux, to build multi-platform images make sure the following configuration
+> in `/etc/docker/daemon.json`:
+>
+> ```json
+> {
+>   "features": {
+>     "containerd-snapshotter": true
+>   }
+> }
+> ```
+
+Finally, the `gen-image` target depends on the `Dockerfile`, `Makefile` and
+`.bazelversion` files, so the image is rebuilt only when one of these changes.
+To force a rebuild at any time, run `make -C docker clean` to remove the
+`.*.lock` files.
 
 ## 📄 docs
 
