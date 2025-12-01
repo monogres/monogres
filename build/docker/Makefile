@@ -11,6 +11,7 @@ DOCKERFILE := debian
 BASE_NAME := debian
 TARGET ?= rbe-pgdeps
 DOCKER_TARGET := $(if $(TARGET),$(BASE_NAME)-$(TARGET),$(BASE_NAME))
+DOCKER_TARGET_LOCK := .$(DOCKER_TARGET).lock
 IMAGE_NAME := $(PROJECT_NAME)/$(DOCKER_TARGET)
 
 REGISTRY := ghcr.io
@@ -19,7 +20,10 @@ GH_REPO_URL := https://github.com/$(GH_ORG)/$(PROJECT_NAME)
 TAG := $(REGISTRY)/$(GH_ORG)/$(IMAGE_NAME):latest
 
 ARCH ?= $(shell uname -m)
-USERNAME ?= postgres
+USERNAME = postgres
+
+BUILD_PLATFORMS ?= "linux/amd64,linux/arm64"
+USE_CACHE ?= false
 
 BASE_IMAGE=debian
 # https://hub.docker.com/_/debian/tags
@@ -73,10 +77,36 @@ all:
 
 .PHONY: all
 
+ifneq ($(USE_CACHE),false)
+define CACHE_SETUP_SCRIPT
+set -x \
+	&& mkdir -p bazel-cache \
+	&& cp -a /$(USERNAME)/.cache/. bazel-cache/.
+endef
+
+CACHE_PARAMETER := --mount type=volume,src=bazel-cache,dst=/$(USERNAME)/.cache,volume-subpath=bazel-cache
+else
+CACHE_PARAMETER :=
+endif
+
 run-image:
 	# NOTE:
     # MUST RUN --privileged so that Bazel --experimental_use_hermetic_linux_sandbox works!
     # OTHERWISE IT JUST SILENTLY CONTINUES WITHOUT HERMETIC SANDBOX!!?
+ifneq ($(USE_CACHE),false)
+	$(DOCKER) run \
+		--platform "linux/$(ARCH)" \
+		--name "sandbox_$(PROJECT_NAME)_$(ARCH)" \
+		--privileged \
+		--rm \
+		--mount type=volume,src=bazel-cache,dst=/src/workspace \
+		--user "root" \
+		--group-add root \
+		--workdir /src/workspace \
+		--entrypoint /bin/bash \
+		$(TAG) \
+		-c '$(CACHE_SETUP_SCRIPT)'
+endif
 	$(DOCKER) run \
 		--platform "linux/$(ARCH)" \
 		--name "sandbox_$(PROJECT_NAME)_$(ARCH)" \
@@ -87,19 +117,20 @@ run-image:
 		--group-add root \
 		--volume "$(REPO)":/src/repo:ro \
 		--volume "$(REPO)":/src/workspace:rw \
+		$(CACHE_PARAMETER) \
 		--workdir /src/workspace \
 		--entrypoint /bin/bash \
 		$(TAG)
 
 .PHONY: run-image
 
-gen-image: .$(DOCKER_TARGET).Dockerfile
+gen-image: $(DOCKER_TARGET_LOCK)
 
 .PHONY: gen-image
 
-.$(DOCKER_TARGET).Dockerfile: $(DOCKERFILE).Dockerfile
+$(DOCKER_TARGET_LOCK): $(DOCKERFILE).Dockerfile $(MAKEFILE_LIST) $(REPO)/.bazelversion
 	$(DOCKER) build \
-		--platform "linux/amd64,linux/arm64" \
+		--platform "$(BUILD_PLATFORMS)" \
 		--file "$<" \
 		--build-arg BASE_IMAGE="$(BASE_IMAGE)" \
 		--build-arg BASE_IMAGE_TAG="$(BASE_IMAGE_TAG)" \
@@ -115,13 +146,13 @@ gen-image: .$(DOCKER_TARGET).Dockerfile
 		--target "$(DOCKER_TARGET)" \
 		--tag "$(IMAGE_NAME)" \
 		. && \
-	cp "$<" "$@"
+	$(DOCKER) image tag $(IMAGE_NAME) $(TAG) && \
+	touch "$@"
 
 # https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens
 # https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry
 # https://docs.github.com/en/packages/learn-github-packages/connecting-a-repository-to-a-package
 push-image: gen-image
-	$(DOCKER) image tag $(IMAGE_NAME) $(TAG) && \
 	echo "\n\nEnter a GH Personal Access Token with (at least) write:packages scope:\n\n" && \
 	$(DOCKER) login --username $(USER) $(REGISTRY)  && \
 	$(DOCKER) push $(TAG)
@@ -134,5 +165,8 @@ pull-image:
 	$(DOCKER) pull $(TAG)
 
 .PHONY: pull-image
+
+clean:
+	rm -f .*.lock
 
 .PHONY: clean test  # making checkmake happy

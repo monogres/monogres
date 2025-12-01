@@ -10,4 +10,4 @@ MODULE.bazel.lock
 .bazelrc.user
 
 # ignore the "Makefile locks"
-/docker/.*Dockerfile
+/docker/.*.lock
