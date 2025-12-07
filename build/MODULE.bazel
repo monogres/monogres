@@ -31,6 +31,19 @@ local_path_override(
     path = "starlark_utils",
 )
 
+RFCC_COMMIT = "2eca712c15301c1f4e71ceec21e6271f373501e2"
+
+archive_override(
+    module_name = "rules_foreign_cc",
+    patch_strip = 1,
+    patches = [
+        "//patches/rules_foreign_cc:0001-workaround-rfcc-0.15.1-ninja-version-breaks-with-gli.patch",
+    ],
+    sha256 = "62cf2de93583a40413cbf7ebca380a0c0d2421db7b3614eb1d8389bcba21723e",
+    strip_prefix = "rules_foreign_cc-{}".format(RFCC_COMMIT),
+    url = "https://github.com/bazel-contrib/rules_foreign_cc/archive/{}.tar.gz".format(RFCC_COMMIT),
+)
+
 # toolchains/
 llvm = use_extension("@toolchains_llvm//toolchain/extensions:llvm.bzl", "llvm", dev_dependency = True)
 llvm.toolchain(

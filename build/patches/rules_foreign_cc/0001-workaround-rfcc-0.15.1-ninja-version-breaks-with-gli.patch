@@ -1,0 +1,59 @@
+From c47f3cdeec7870190a4456e0db850afdc2d61692 Mon Sep 17 00:00:00 2001
+From: Javier Maestro <jjmaestro@ieee.org>
+Date: Sun, 7 Dec 2025 16:25:29 +0000
+Subject: [PATCH] workaround: rfcc 0.15.1 ninja version breaks with glibc 2.36
+
+The recent version upgrade in `rules_foreign_cc bumped Ninja to `1.13.0`
+and it requires a newer glibc version (`2.38`).
+
+This is coupled with the fact that `rfcc` currently sets versions for
+the tooling that can't be overwritten in bzlmod and thus, requires
+patching.
+
+[PR#1157 Enable users to customize cmake and ninja versions with bzlmod]: https://github.com/bazel-contrib/rules_foreign_cc/pull/1157
+[PR#1158 Allow configuring meson, make and pkgconfig versions via bzlmod...]: https://github.com/bazel-contrib/rules_foreign_cc/pull/1158
+[PR#1418 feat: extend the extension to support more version pins]: https://github.com/bazel-contrib/rules_foreign_cc/pull/1418
+[I#1018 Allow build pure cmake projects without ninja toolchains]: https://github.com/bazel-contrib/rules_foreign_cc/issues/1018
+[I#1224 Enable changing cmake versions with bzlmod]: https://github.com/bazel-contrib/rules_foreign_cc/issues/1224
+[I#1334 How can I use native tools without compiling them?]: https://github.com/bazel-contrib/rules_foreign_cc/issues/1334
+[I#1368 meson is incompatible with toolchains_llvm]: https://github.com/bazel-contrib/rules_foreign_cc/issues/1368
+[I#1313 Make and pkg-config toolchains are not reproducible]: https://github.com/bazel-contrib/rules_foreign_cc/issues/1313
+[I#1362 gnumake/pkg-config toolchains are not reproducible]: https://github.com/bazel-contrib/rules_foreign_cc/issues/1362
+---
+ MODULE.bazel | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/MODULE.bazel b/MODULE.bazel
+index dffb979..de3ac48 100644
+--- a/MODULE.bazel
++++ b/MODULE.bazel
+@@ -24,6 +24,8 @@ python.toolchain(python_version = "3.12")
+ use_repo(python, "python_3_12")
+ 
+ tools = use_extension("@rules_foreign_cc//foreign_cc:extensions.bzl", "tools")
++tools.ninja(version = "1.12.1")
++
+ use_repo(
+     tools,
+     "cmake_3.31.8_toolchains",
+@@ -33,7 +35,7 @@ use_repo(
+     "glib_src",
+     "gnumake_src",
+     "meson_src",
+-    "ninja_1.13.0_toolchains",
++    "ninja_1.12.1_toolchains",
+     "ninja_build_src",
+     "pkgconfig_src",
+     "rules_foreign_cc_framework_toolchains",
+@@ -42,7 +44,7 @@ use_repo(
+ register_toolchains(
+     "@rules_foreign_cc_framework_toolchains//:all",
+     "@cmake_3.31.8_toolchains//:all",
+-    "@ninja_1.13.0_toolchains//:all",
++    "@ninja_1.12.1_toolchains//:all",
+     "@python_3_12//:all",
+     "@rules_foreign_cc//toolchains:all",
+ )
+-- 
+2.39.5 (Apple Git-154)
+
