@@ -22,7 +22,7 @@ FEATURES_TO_DEB_PKGS = {
     "gssapi": "libkrb5-dev",
     "icu": "libicu-dev",
     "ldap": "libldap-dev",
-    "libcurl": "libcurl-dev",
+    "libcurl": "libcurl4-openssl-dev",
     "libnuma": "libnuma-dev",
     "liburing": "liburing-dev",
     "libxml": "libxml2-dev",

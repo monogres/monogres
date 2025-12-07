@@ -47,12 +47,14 @@ DEPS_NON_HERMETIC_BAZEL_RULES = \
 DEPS_POSTGRES = \
 	gettext \
 	libavahi-compat-libdnssd-dev \
+	libcurl4-openssl-dev \
 	libedit-dev \
 	libeditreadline-dev \
 	libicu-dev \
 	libkrb5-dev \
 	libldap-dev \
 	liblz4-dev \
+	libnuma-dev \
 	libossp-uuid-dev \
 	libpam0g-dev \
 	libperl-dev \
@@ -60,6 +62,7 @@ DEPS_POSTGRES = \
 	libselinux1-dev \
 	libssl-dev \
 	libsystemd-dev \
+	liburing-dev \
 	libxml2-dev \
 	libxslt1-dev \
 	libzstd-dev \
