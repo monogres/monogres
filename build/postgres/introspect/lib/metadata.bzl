@@ -72,9 +72,15 @@ DEP_TO_FEATURE = {
 # where the sepgsql contrib extension was not being installed, pre-17.0
 CONTRIB_INSTALLED_PATHS_OVERRIDE = {
     "sepgsql": {
-        "<17.0": [
+        "<16.7": [
             "lib/{arch}-linux-gnu/sepgsql.so",
             "share/extension/sepgsql.sql",
+        ],
+        # NOTE: the path changed in 16.7
+        # https://github.com/postgres/postgres/commit/155d616
+        ">=16.7,<17.0": [
+            "lib/{arch}-linux-gnu/sepgsql.so",
+            "share/contrib/sepgsql.sql",
         ],
     },
 }
