@@ -40,6 +40,9 @@ compile-time options) tailored for different use cases:
 | `gssapi`        |             |           |           | X      |
 | `icu`           |             |           | X         | X      |
 | `ldap`          |             |           |           | X      |
+| `libcurl`       |             |           |           | X      |
+| `libnuma`       |             |           |           | X      |
+| `liburing`      |             |           |           | X      |
 | `libxml`        |             |           |           | X      |
 | `libxslt`       |             |           |           | X      |
 | `llvm`          |             |           | X         | X      |
