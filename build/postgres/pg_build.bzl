@@ -10,15 +10,19 @@ build.
 """
 
 load("@rules_foreign_cc//foreign_cc:meson.bzl", "meson")
+load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 load(":toolchain.bzl", "pg_template_variable_info")
 
-def _meson_common_args(pg_src, build_options, auto_features):
+def _meson_common_args(pg_src, build_options, auto_features, sysroot = None):
     build_data = [
         "@m4//bin:m4",
         "@flex//bin:flex",
         "@bison//bin:bison",
         "@python_3_11//:python3",
     ]
+
+    if sysroot:
+        build_data.append(sysroot)
 
     toolchains = [
         "@rules_m4//m4:current_m4_toolchain",
@@ -49,6 +53,87 @@ def _meson_common_args(pg_src, build_options, auto_features):
         PYTHON = "$(execpath @python_3_11//:python3)",
     )
 
+    # NOTE:
+    # Sysroot setup for dependencies from rules_distroless packages.
+    # The sysroot tarball contains merged dependencies with standard Linux
+    # directory structure. We extract it at build time and set up paths so
+    # that pkg-config, the compiler, and linker can find the libraries.
+    #
+    # PKG_CONFIG_SYSROOT_DIR tells pkg-config to prepend this path to all
+    # directories in .pc files, avoiding the need to modify them.
+    env_sysroot = dict()
+
+    if sysroot:
+        # NOTE:
+        # The SYSROOT_DIR env var extracts the sysroot tarball and outputs
+        # the path. This must be evaluated before other vars that use it.
+        # Shell command substitution ensures extraction happens once.
+        #
+        # For meson builds, we use several mechanisms to find dependencies:
+        # 1. PKG_CONFIG_SYSROOT_DIR: prepends sysroot path to all .pc file paths
+        # 2. CFLAGS with -idirafter: adds sysroot includes AFTER system paths
+        #
+        # We use -idirafter instead of C_INCLUDE_PATH because -idirafter
+        # directories are searched AFTER standard system directories. This
+        # prevents sysroot headers from conflicting with system libc headers
+        # while still making them available for headers like dns_sd.h.
+        env_sysroot = dict(
+            # Extract sysroot tarball and set SYSROOT_DIR
+            # The $$(...) ensures this runs once and captures the path
+            SYSROOT_DIR = "$$({cmd})".format(
+                cmd = " && ".join([
+                    "mkdir -p $$EXT_BUILD_ROOT/sysroot",
+                    "tar -xf $(execpath {sysroot}) -C $$EXT_BUILD_ROOT/sysroot".format(
+                        sysroot = sysroot,
+                    ),
+                    "echo $$EXT_BUILD_ROOT/sysroot",
+                ]),
+            ),
+            # pkg-config will prepend SYSROOT_DIR to all paths in .pc files
+            PKG_CONFIG_SYSROOT_DIR = "$$SYSROOT_DIR",
+            PKG_CONFIG_PATH = ":".join([
+                "$$SYSROOT_DIR/usr/lib/$$(uname -m)-linux-gnu/pkgconfig",
+                "$$SYSROOT_DIR/usr/share/pkgconfig",
+            ]),
+            # Add sysroot include paths searched AFTER system directories
+            # Using -idirafter avoids conflicts with system libc headers
+            CFLAGS = " ".join([
+                "-idirafter $$SYSROOT_DIR/usr/include",
+                "-idirafter $$SYSROOT_DIR/usr/include/$$(uname -m)-linux-gnu",
+            ]),
+            CXXFLAGS = " ".join([
+                "-idirafter $$SYSROOT_DIR/usr/include",
+                "-idirafter $$SYSROOT_DIR/usr/include/$$(uname -m)-linux-gnu",
+            ]),
+            # Add sysroot library path for linking
+            LIBRARY_PATH = "$$SYSROOT_DIR/usr/lib/$$(uname -m)-linux-gnu",
+            # Add sysroot library path for runtime (needed by tools like msgfmt)
+            LD_LIBRARY_PATH = ":".join([
+                "$$SYSROOT_DIR/usr/lib/$$(uname -m)-linux-gnu",
+                "$$SYSROOT_DIR/usr/lib",
+            ]),
+        )
+
+    # NOTE:
+    # Build PATH with python3 directory and optionally sysroot bin directories.
+    # This ensures scripts using `/usr/bin/env python3` can find python, and
+    # tools from the sysroot (like llvm-config for JIT, msgfmt for i18n) are
+    # available. The system LLVM path (/usr/lib/llvm-14/bin) must come before
+    # the sysroot path so that meson finds the system clang (which is in
+    # Docker) rather than looking for clang in the sysroot (where only
+    # llvm-config exists).
+    path_components = ["$$(dirname $(execpath @python_3_11//:python3))"]
+
+    if sysroot:
+        # Add system LLVM bin directory first (for clang from system toolchain)
+        path_components.append("/usr/lib/llvm-14/bin")
+
+        # Add sysroot bin directories for tools
+        path_components.append("$$SYSROOT_DIR/usr/bin")
+        path_components.append("$$SYSROOT_DIR/usr/lib/llvm-14/bin")
+
+    path_components.append("$$PATH")
+
     env_meson = dict(
         # NOTE:
         # https://github.com/jmillikin/rules_bison/issues/17#issuecomment-2399677539
@@ -67,17 +152,7 @@ def _meson_common_args(pg_src, build_options, auto_features):
         # of the tools are not needing it. If another tool does, I think it
         # would probably fail...
         RUNFILES_DIR = "$(execpath @bison//bin:bison).runfiles/",
-        # rules_foreign_cc pkg-config needs this, these are the default
-        # pkg-config search dirs, found running pkg-config --variable pc_path
-        # pkg-config
-        PKG_CONFIG_PATH = ":".join([
-            "/usr/local/lib/$$(uname -m)-linux-gnu/pkgconfig",
-            "/usr/local/lib/pkgconfig",
-            "/usr/local/share/pkgconfig",
-            "/usr/lib/$$(uname -m)-linux-gnu/pkgconfig",
-            "/usr/lib/pkgconfig",
-            "/usr/share/pkgconfig",
-        ]),
+        PATH = ":".join(path_components),
     )
 
     # NOTE:
@@ -91,9 +166,11 @@ def _meson_common_args(pg_src, build_options, auto_features):
         PYTHON = "$PYTHON",
     )
 
+    # NOTE: env_sysroot must be merged first so SYSROOT_DIR is set before
+    # other variables that reference it (PKG_CONFIG_SYSROOT_DIR, etc.)
     return dict(
         build_data = build_data,
-        env = env | env_meson,
+        env = env_sysroot | env | env_meson,
         lib_source = pg_src,
         options = build_options | meson_tool_options,
         target_args = {
@@ -105,7 +182,7 @@ def _meson_common_args(pg_src, build_options, auto_features):
         visibility = ["//visibility:public"],
     )
 
-def _pg_build_meson(name, pg_src, build_options, auto_features):
+def _pg_build_meson(name, pg_src, build_options, auto_features, sysroot = None):
     pg_binaries = [
         "initdb",
         "postgres",
@@ -127,6 +204,7 @@ def _pg_build_meson(name, pg_src, build_options, auto_features):
         pg_src = pg_src,
         build_options = build_options,
         auto_features = auto_features,
+        sysroot = sysroot,
     )
 
     meson(**(meson_common_args | dict(
@@ -147,11 +225,12 @@ def _pg_build_meson(name, pg_src, build_options, auto_features):
         output_group = "Meson_logs",
     )
 
-def _pg_build_introspect(name, pg_src, build_options, auto_features):
+def _pg_build_introspect(name, pg_src, build_options, auto_features, sysroot = None):
     meson_common_args = _meson_common_args(
         pg_src = pg_src,
         build_options = build_options,
         auto_features = auto_features,
+        sysroot = sysroot,
     )
 
     introspect_target_name = "{}--introspect".format(name)
@@ -171,7 +250,7 @@ def _pg_build_introspect(name, pg_src, build_options, auto_features):
         tags = ["manual"],
     )
 
-def pg_build(name, pg_src, build_options, auto_features, pg_version = None):
+def pg_build(name, pg_src, build_options, auto_features, deps_buildtime = None, pg_version = None):
     """
     Generates a Bazel target to build Postgres with the Meson build system.
 
@@ -195,11 +274,27 @@ def pg_build(name, pg_src, build_options, auto_features, pg_version = None):
             `--auto-features`](https://www.postgresql.org/docs/current/install-meson.html#CONFIGURE-AUTO-FEATURES-MESON)
             and [Meson Build Options
             "Features"](https://mesonbuild.com/Build-options.html#features).
+        deps_buildtime (list[str]): Optional list of dependency tarballs
+            from rules_distroless packages. These will be combined into a
+            sysroot and made available to the meson build via environment
+            variables (PKG_CONFIG_SYSROOT_DIR, CFLAGS, LDFLAGS, etc.).
         pg_version (struct): Optional `struct` that contains the Postgres name
             and version that will be the default target.
     """
-    _pg_build_meson(name, pg_src, build_options, auto_features)
-    _pg_build_introspect(name, pg_src, build_options, auto_features)
+    sysroot = None
+
+    if deps_buildtime:
+        sysroot = "{}--sysroot".format(name)
+
+        pkg_tar(
+            name = sysroot,
+            deps = deps_buildtime,
+            extension = "tar",
+            out = "{}.tar".format(sysroot),
+        )
+
+    _pg_build_meson(name, pg_src, build_options, auto_features, sysroot)
+    _pg_build_introspect(name, pg_src, build_options, auto_features, sysroot)
 
     if pg_version:
         native.alias(
@@ -226,11 +321,19 @@ def pg_build_all(name, cfg):
         cfg (struct): A Postgres config struct (see `cfg.new(...)`).
     """
     for target in cfg.targets:
+        for dep in set(target.deps_buildtime + target.deps_runtime):
+            dep_name = dep.split("//")[-1]
+            native.alias(
+                name = "%s--%s" % (target.name, dep_name),
+                actual = dep,
+                visibility = ["//visibility:public"],
+            )
         pg_build(
             name = target.name,
             pg_src = target.pg_src,
             build_options = target.build_options,
             auto_features = target.auto_features,
+            deps_buildtime = target.deps_buildtime,
             pg_version = target.pg_version,
         )
 

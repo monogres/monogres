@@ -114,24 +114,7 @@ EOF
 
 USER $USERNAME
 
-
-FROM debian-rbe AS debian-rbe-pgdeps
-
-USER root
-
-ARG DEPS_POSTGRES
-ENV DEPS_POSTGRES="$DEPS_POSTGRES"
-
-# Postgres dependencies
-RUN /bin/bash <<EOF
-$APT_INSTALL
-apt_install $DEPS_POSTGRES
-EOF
-
-USER $USERNAME
-
-
-FROM debian-rbe-pgdeps AS debian-debug
+FROM debian-rbe AS debian-debug
 
 USER root
 

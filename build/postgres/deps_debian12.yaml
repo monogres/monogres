@@ -1,0 +1,71 @@
+# Packages for debian v12 (bookworm)
+#
+#  Anytime this file is changed, the lockfile needs to be regenerated.
+#
+#  To generate the <DISTRO>.lock.json:
+#      1. comment the lock = ... of the corresponding apt.install()
+#      2. run: bazel run @<DISTRO>//:lock
+version: 1
+sources:
+  - channel: bookworm main
+    url: https://snapshot-cloudflare.debian.org/archive/debian/20250113T000000Z
+  - channel: bookworm-security main
+    url: https://snapshot-cloudflare.debian.org/archive/debian-security/20250113T000000Z
+  - channel: bookworm-updates main
+    url: https://snapshot-cloudflare.debian.org/archive/debian/20250113T000000Z
+archs:
+  - amd64
+  - arm64
+packages:
+  # common
+  - gettext
+  # buildtime
+  - libavahi-compat-libdnssd-dev
+  - libcurl4-openssl-dev
+  - libedit-dev
+  - libeditreadline-dev
+  - libicu-dev
+  - libkrb5-dev
+  - libldap-dev
+  - liblz4-dev
+  - libnuma-dev
+  - libossp-uuid-dev
+  - libpam0g-dev
+  - libperl-dev
+  - libpython3-dev
+  - libselinux1-dev
+  - libssl-dev
+  - libsystemd-dev
+  - liburing-dev
+  - libxml2-dev
+  - libxslt1-dev
+  - libzstd-dev
+  - llvm-14-dev
+  - tcl-dev
+  - uuid-dev
+  - zlib1g-dev
+  # runtime
+  - libavahi-compat-libdnssd1
+  - libcurl4
+  - libedit2
+  - libicu72
+  - libkrb5-3
+  - libldap-2.5-0
+  - liblz4-1
+  - libnuma1
+  - libossp-uuid16
+  - libpam0g
+  - libperl5.36
+  - libpython3.11
+  - libselinux1
+  - libssl3
+  - libsystemd0
+  - liburing2
+  - libuuid1
+  - libxml2
+  - libxslt1.1
+  - libzstd1
+  - llvm-14-runtime
+  - ncurses-term
+  - tcl
+  - zlib1g

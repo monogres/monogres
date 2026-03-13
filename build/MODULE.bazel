@@ -19,6 +19,7 @@ bazel_dep(name = "rules_distroless", version = "0.6.1")
 bazel_dep(name = "rules_flex", version = "0.4")
 bazel_dep(name = "rules_foreign_cc", version = "0.15.1")
 bazel_dep(name = "rules_m4", version = "0.3")
+bazel_dep(name = "rules_pkg", version = "1.2.0")
 bazel_dep(name = "rules_python", version = "1.6.3")
 bazel_dep(name = "starlark_utils", version = "0.0.1")
 bazel_dep(name = "tar.bzl", version = "0.6.0")
@@ -46,8 +47,16 @@ archive_override(
 
 # toolchains/
 llvm = use_extension("@toolchains_llvm//toolchain/extensions:llvm.bzl", "llvm", dev_dependency = True)
+
+# NOTE:
+# We use a system LLVM toolchain, so it will use the LLVM installed in the
+# Docker image. This requires llvm-14, clang-14, lld-14, and libc6-dev to be
+# installed. Also, absolute_paths=True is needed because the system toolchain
+# uses absolute paths for builtin headers:
+# /usr/lib/llvm-14/lib/clang/14.0.6/include/
 llvm.toolchain(
     name = "llvm_toolchain_system_linux_amd64",
+    absolute_paths = True,
     exec_arch = "amd64",
     exec_os = "linux",
     llvm_version = "14.0.6",
@@ -58,6 +67,7 @@ llvm.toolchain_root(
 )
 llvm.toolchain(
     name = "llvm_toolchain_system_linux_arm64",
+    absolute_paths = True,
     exec_arch = "arm64",
     exec_os = "linux",
     llvm_version = "14.0.6",
@@ -168,6 +178,12 @@ PG_EXTENSIONS = [
 ]
 
 apt = use_extension("@rules_distroless//apt:extensions.bzl", "apt")
+apt.install(
+    name = "pg_deps_debian12",
+    manifest = "//postgres:deps_debian12.yaml",
+    nolock = True,
+)
+use_repo(apt, "pg_deps_debian12")
 apt.install(
     name = "pgext_sslutils_deps_debian12",
     manifest = "//extensions/sslutils:deps_debian12.yaml",

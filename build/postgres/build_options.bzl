@@ -22,6 +22,8 @@ load(":version.bzl", "is_compatible_with")
 _PREFIX_DISTRO = "/postgres"
 
 _DEFAULT_OPTIONS = dict(
+    # Use 'lib' instead of default 'lib64' on x86_64 to match Bazel output dirs
+    libdir = "lib",
     rpath = "false",
     system_tzdata = "/usr/share/zoneinfo",
 )

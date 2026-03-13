@@ -5,7 +5,7 @@ Postgres build configuration.
 load("@pg_src//:repo.bzl", "DEFAULT_VERSION", "METADATA", "REPO_NAME", "VERSIONS")
 load(":build_options.bzl", "DEFAULT_OPTION_SET", "OPTION_SETS", "build_options")
 
-def _target(name, version, option_set, repo_name):
+def _target(name, version, option_set, repo_name, deps_buildtime, deps_runtime):
     """
     Creates a struct representing a Postgres build target.
 
@@ -18,6 +18,8 @@ def _target(name, version, option_set, repo_name):
             options.
         repo_name (str): The name of the external Bazel repository with the
             Postgres source code.
+        deps_buildtime (list[str]): List of Postgres buildtime dependencies.
+        deps_runtime (list[str]): List of Postgres runtime dependencies.
 
     Returns:
         A `pg_target` `struct`:
@@ -30,6 +32,10 @@ def _target(name, version, option_set, repo_name):
             `build_options`.
           - `pg_src (str)`: the label of the external Bazel repository with the
             source code for the given Postgres version.
+          - `deps_buildtime (list[str])`: the list of Postgres buildtime
+            dependencies.
+          - `deps_runtime (list[str])`: the list of Postgres runtime
+            dependencies.
     """
     if version not in VERSIONS:
         fail("Postgres version %s is not available in pg_src" % version)
@@ -57,9 +63,11 @@ def _target(name, version, option_set, repo_name):
         auto_features = auto_features,
         pg_src = "@%s//%s" % (repo_name, version),
         pg_version = pg_version,
+        deps_buildtime = deps_buildtime,
+        deps_runtime = deps_runtime,
     )
 
-def _new(name, versions, option_sets, repo_name):
+def _new(name, versions, option_sets, repo_name, deps_buildtime, deps_runtime):
     """
     Creates a config `struct` containing build targets for multiple Postgres versions.
 
@@ -71,6 +79,8 @@ def _new(name, versions, option_sets, repo_name):
             compile-time options.
         repo_name (str): The name of the external Bazel repository with the
             Postgres source code.
+        deps_buildtime (list[str]): List of Postgres buildtime dependencies.
+        deps_runtime (list[str]): List of Postgres runtime dependencies.
 
     Returns:
         A config `struct` with:
@@ -83,7 +93,14 @@ def _new(name, versions, option_sets, repo_name):
 
     for version in versions:
         for option_set in option_sets:
-            target = _target(name, version, option_set, repo_name)
+            target = _target(
+                name,
+                version,
+                option_set,
+                repo_name,
+                deps_buildtime,
+                deps_runtime,
+            )
 
             if (
                 version == DEFAULT_VERSION and
@@ -108,4 +125,57 @@ CFG = cfg.new(
     versions = VERSIONS,
     option_sets = OPTION_SETS,
     repo_name = REPO_NAME,
+    deps_buildtime = [
+        "@pg_deps_debian12//gettext",
+        "@pg_deps_debian12//libavahi-compat-libdnssd-dev",
+        "@pg_deps_debian12//libcurl4-openssl-dev",
+        "@pg_deps_debian12//libedit-dev",
+        "@pg_deps_debian12//libeditreadline-dev",
+        "@pg_deps_debian12//libicu-dev",
+        "@pg_deps_debian12//libkrb5-dev",
+        "@pg_deps_debian12//libldap-dev",
+        "@pg_deps_debian12//liblz4-dev",
+        "@pg_deps_debian12//libnuma-dev",
+        "@pg_deps_debian12//libossp-uuid-dev",
+        "@pg_deps_debian12//libpam0g-dev",
+        "@pg_deps_debian12//libperl-dev",
+        "@pg_deps_debian12//libpython3-dev",
+        "@pg_deps_debian12//libselinux1-dev",
+        "@pg_deps_debian12//libssl-dev",
+        "@pg_deps_debian12//libsystemd-dev",
+        "@pg_deps_debian12//liburing-dev",
+        "@pg_deps_debian12//libxml2-dev",
+        "@pg_deps_debian12//libxslt1-dev",
+        "@pg_deps_debian12//libzstd-dev",
+        "@pg_deps_debian12//llvm-14-dev",
+        "@pg_deps_debian12//tcl-dev",
+        "@pg_deps_debian12//uuid-dev",
+        "@pg_deps_debian12//zlib1g-dev",
+    ],
+    deps_runtime = [
+        "@pg_deps_debian12//gettext",
+        "@pg_deps_debian12//libavahi-compat-libdnssd1",
+        "@pg_deps_debian12//libedit2",
+        "@pg_deps_debian12//libicu72",
+        "@pg_deps_debian12//libkrb5-3",
+        "@pg_deps_debian12//libldap-2.5-0",
+        "@pg_deps_debian12//liblz4-1",
+        "@pg_deps_debian12//libnuma1",
+        "@pg_deps_debian12//libossp-uuid16",
+        "@pg_deps_debian12//libpam0g",
+        "@pg_deps_debian12//libperl5.36",
+        "@pg_deps_debian12//libpython3.11",
+        "@pg_deps_debian12//libselinux1",
+        "@pg_deps_debian12//libssl3",
+        "@pg_deps_debian12//libsystemd0",
+        "@pg_deps_debian12//liburing2",
+        "@pg_deps_debian12//libuuid1",
+        "@pg_deps_debian12//libxml2",
+        "@pg_deps_debian12//libxslt1.1",
+        "@pg_deps_debian12//libzstd1",
+        "@pg_deps_debian12//llvm-14-runtime",
+        "@pg_deps_debian12//ncurses-term",
+        "@pg_deps_debian12//tcl",
+        "@pg_deps_debian12//zlib1g",
+    ],
 )
