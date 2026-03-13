@@ -49,6 +49,7 @@ def _new(
             name = "~".join([name, version, pg_target.pg_version.name]),
             version = version,
             pg_version = pg_target.pg_version,
+            pg_target = pg_target,
             pgxs_src = "@%s//%s:dir" % (repo_name, version),
             deps_buildtime = deps_buildtime or [],
             deps_runtime = deps_runtime or [],
