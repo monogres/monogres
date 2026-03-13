@@ -2,7 +2,7 @@
 Rules to build Postgres PGXS extensions from source.
 """
 
-def pgxs_build(name, pgxs_src, dependencies, pg_version, debug = False):
+def pgxs_build(name, pgxs_src, deps_buildtime, pg_version, debug = False):
     """
     Generates a Bazel target to build a PGXS extension with the [PGXS build system].
 
@@ -11,7 +11,7 @@ def pgxs_build(name, pgxs_src, dependencies, pg_version, debug = False):
     Args:
         name (str): The name of the Bazel target to generate.
         pgxs_src (str): The repo with the extension source code.
-        dependencies (list[str]): List of dependencies needed to build the
+        deps_buildtime (list[str]): List of dependencies needed to build the
             extension.
         pg_version (struct): `struct` containing metadata to select the
             Postgres build that will be used when building the extension.
@@ -24,7 +24,7 @@ def pgxs_build(name, pgxs_src, dependencies, pg_version, debug = False):
         srcs = [
             "//postgres:%s" % pg_version.name,
             pgxs_src,
-        ] + dependencies,
+        ] + deps_buildtime,
         outs = [tar_file, log_file],
         cmd = """
         tar_() {{
@@ -42,22 +42,22 @@ def pgxs_build(name, pgxs_src, dependencies, pg_version, debug = False):
                 "$${{args[@]}}"
         }}
 
-        setup_dependencies() {{
-            local ext_build_deps="$$1"; shift
-            local dependencies=("$$@");
+        setup_deps_buildtime() {{
+            local deps_buildtime_path="$$1"; shift
+            local deps_buildtime=("$$@");
 
-            echo "# $$(date) - setup_dependencies"
+            echo "# $$(date) - setup_deps_buildtime"
 
-            [[ $${{#dependencies[@]}} -eq 0 ]] && return
+            [[ $${{#deps_buildtime[@]}} -eq 0 ]] && return
 
-            mkdir -p "$$ext_build_deps"
+            mkdir -p "$$deps_buildtime_path"
 
             echo
-            echo "Extracting dependencies in ext_build_deps: $$ext_build_deps"
+            echo "Extracting deps_buildtime in: $$deps_buildtime_path"
 
-            for dep in "$${{dependencies[@]}}"; do
+            for dep in "$${{deps_buildtime[@]}}"; do
                 echo "  - $$dep"
-                tar -xf "$$dep" -C "$$ext_build_deps"
+                tar -xf "$$dep" -C "$$deps_buildtime_path"
             done
             echo
         }}
@@ -65,7 +65,7 @@ def pgxs_build(name, pgxs_src, dependencies, pg_version, debug = False):
         compile_extension() {{
             local cc="$$1"; shift
             local pgxs_src="$$1"; shift
-            local ext_build_deps="$$1"; shift
+            local deps_buildtime_path="$$1"; shift
             local installdir="$$1"; shift
 
             # NOTE:
@@ -83,18 +83,32 @@ def pgxs_build(name, pgxs_src, dependencies, pg_version, debug = False):
             local arch
             arch="$$(uname -m)"
 
+            # NOTE:
+            # We use -idirafter for include paths so they are searched AFTER
+            # system directories. This prevents sysroot headers from conflicting
+            # with system libc headers while still making them available.
             local pg_cflags=(
-                "-I$$ext_build_deps/usr/include"
-                "-I$$ext_build_deps/usr/include/$${{arch}}-linux-gnu"
+                "-idirafter $$deps_buildtime_path/usr/include"
+                "-idirafter $$deps_buildtime_path/usr/include/$${{arch}}-linux-gnu"
             )
             local pg_ldflags=(
-                "-L$$ext_build_deps/usr/lib/$${{arch}}-linux-gnu"
+                "-L$$deps_buildtime_path/usr/lib/$${{arch}}-linux-gnu"
             )
+
+            # NOTE:
+            # Set up environment variables for pkg-config and runtime library loading.
+            # This mirrors the setup in postgres/pg_build.bzl for consistency.
+            export PKG_CONFIG_SYSROOT_DIR="$$deps_buildtime_path"
+            export PKG_CONFIG_PATH="$$deps_buildtime_path/usr/lib/$${{arch}}-linux-gnu/pkgconfig:$$deps_buildtime_path/usr/share/pkgconfig"
+            export LIBRARY_PATH="$$deps_buildtime_path/usr/lib/$${{arch}}-linux-gnu"
+            export LD_LIBRARY_PATH="$$deps_buildtime_path/usr/lib/$${{arch}}-linux-gnu:$$deps_buildtime_path/usr/lib"
 
             echo "# $$(date) - compile_extension"
             echo
             echo "pgxs_src: $$pgxs_src"
             echo "pgxs_src_copy: $$pgxs_src_copy"
+            echo "PKG_CONFIG_SYSROOT_DIR: $$PKG_CONFIG_SYSROOT_DIR"
+            echo "PKG_CONFIG_PATH: $$PKG_CONFIG_PATH"
 
             if [ -f "$$pgxs_src_copy/configure" ]
             then
@@ -118,9 +132,11 @@ def pgxs_build(name, pgxs_src, dependencies, pg_version, debug = False):
                 -C "$$pgxs_src_copy" \
                 CC="$$cc" \
                 CXX="$$cc" \
-                CPP="$$cc" \
+                CPP="$$cc -E" \
                 PG_CONFIG="$$EXT_BUILD_ROOT/$(PG_CONFIG)" \
                 PG_CFLAGS="$${{pg_cflags[*]}}" \
+                PG_CPPFLAGS="$${{pg_cflags[*]}}" \
+                CPPFLAGS="$${{pg_cflags[*]}}" \
                 PG_LDFLAGS="$${{pg_ldflags[*]}}" \
                 USE_PGXS=1 || return $$?
 
@@ -131,10 +147,11 @@ def pgxs_build(name, pgxs_src, dependencies, pg_version, debug = False):
                 -C "$$pgxs_src_copy" \
                 CC="$$cc" \
                 CXX="$$cc" \
-                CPP="$$cc" \
+                CPP="$$cc -E" \
                 PG_CONFIG="$$EXT_BUILD_ROOT/$(PG_CONFIG)" \
                 PG_CFLAGS="$${{pg_cflags[*]}}" \
                 PG_CPPFLAGS="$${{pg_cflags[*]}}" \
+                CPPFLAGS="$${{pg_cflags[*]}}" \
                 PG_LDFLAGS="$${{pg_ldflags[*]}}" \
                 USE_PGXS=1 \
                 DESTDIR="$$installdir" \
@@ -228,9 +245,9 @@ def pgxs_build(name, pgxs_src, dependencies, pg_version, debug = False):
         TAR_FILE="$$EXT_BUILD_ROOT/{tar_file}"
         LOG_FILE="$$EXT_BUILD_ROOT/{log_file}"
         PGXS_SRC="$$EXT_BUILD_ROOT/{pgxs_src}"
-        DEPENDENCIES=({dependencies})
+        DEPS_BUILDTIME=({deps_buildtime})
 
-        EXT_BUILD_DEPS="$$EXT_BUILD_ROOT/ext_build_deps"
+        DEPS_BUILDTIME_PATH="$$EXT_BUILD_ROOT/deps_buildtime"
         INSTALLDIR="$$EXT_BUILD_ROOT/$$(basename "$$TAR_FILE" .tar)"
 
         PGXS_INSTALLDIR="$$(make_pgxs_installdir "$$INSTALLDIR")"
@@ -240,8 +257,8 @@ def pgxs_build(name, pgxs_src, dependencies, pg_version, debug = False):
         export LOG_FILE
 
         {{
-            setup_dependencies "$$EXT_BUILD_DEPS" "$${{DEPENDENCIES[@]}}"
-            compile_extension "$$CC" "$$PGXS_SRC" "$$EXT_BUILD_DEPS" "$$INSTALLDIR" 2>&1
+            setup_deps_buildtime "$$DEPS_BUILDTIME_PATH" "$${{DEPS_BUILDTIME[@]}}"
+            compile_extension "$$CC" "$$PGXS_SRC" "$$DEPS_BUILDTIME_PATH" "$$INSTALLDIR" 2>&1
             tar_ "$$TAR_FILE" --directory "$$PGXS_INSTALLDIR" .
         }} >> "$$LOG_FILE"
         """.format(
@@ -259,9 +276,9 @@ def pgxs_build(name, pgxs_src, dependencies, pg_version, debug = False):
             tar_file = "$(locations %s)" % tar_file,
             log_file = "$(locations %s)" % log_file,
             pgxs_src = "$(locations %s)" % pgxs_src,
-            dependencies = " ".join([
-                "$(locations %s)" % dependency
-                for dependency in dependencies
+            deps_buildtime = " ".join([
+                "$(locations %s)" % dep_buildtime
+                for dep_buildtime in deps_buildtime
             ]),
             debug = "%s" % debug,
         ),
@@ -294,11 +311,11 @@ def pgxs_build_all(name, cfg):
         pgxs_build(
             name = target.name,
             pgxs_src = target.pgxs_src,
-            dependencies = target.dependencies,
+            deps_buildtime = target.deps_buildtime,
             pg_version = target.pg_version,
         )
 
-        for dep in target.dependencies:
+        for dep in set(target.deps_buildtime + target.deps_runtime):
             dep_name = dep.split("//")[-1]
             native.alias(
                 name = "%s--%s" % (target.name, dep_name),

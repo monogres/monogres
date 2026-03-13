@@ -7,7 +7,14 @@ intended to be imported into BUILD files to then call `pgxs_build` rules.
 
 load(":features.bzl", "is_compatible")
 
-def _new(name, versions, pg_targets, repo_name, dependencies = None, metadata = None):
+def _new(
+        name,
+        versions,
+        pg_targets,
+        repo_name,
+        deps_buildtime = None,
+        deps_runtime = None,
+        metadata = None):
     """
     Creates a config `struct` containing build targets for multiple Postgres extensions.
 
@@ -23,7 +30,9 @@ def _new(name, versions, pg_targets, repo_name, dependencies = None, metadata = 
             which to build the extension.
         repo_name (str): The name of the external Bazel repository with the
             extension source code.
-        dependencies (list[str]): List of dependencies needed to build the
+        deps_buildtime (list[str]): List of dependencies needed to build the
+            extension.
+        deps_runtime (list[str]): List of dependencies needed to run the
             extension.
         metadata (dict): Extension metadata that can contain e.g.
             `compatible_with` metadata to filter incompatible Postgres
@@ -41,7 +50,8 @@ def _new(name, versions, pg_targets, repo_name, dependencies = None, metadata = 
             version = version,
             pg_version = pg_target.pg_version,
             pgxs_src = "@%s//%s:dir" % (repo_name, version),
-            dependencies = dependencies or [],
+            deps_buildtime = deps_buildtime or [],
+            deps_runtime = deps_runtime or [],
         )
         for version in versions
         for pg_target in pg_targets

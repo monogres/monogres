@@ -10,4 +10,13 @@ archs:
   - amd64
   - arm64
 packages:
+  # buildtime
   - libcurl4-openssl-dev
+  - libkrb5-dev
+  - liblz4-dev
+  - libssl-dev
+  - libzstd-dev
+  # runtime
+  - libcurl4
+  - liblz4-1
+  - libzstd1

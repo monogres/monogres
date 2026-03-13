@@ -22,7 +22,12 @@ load(":version.bzl", "is_compatible_with")
 _PREFIX_DISTRO = "/postgres"
 
 _DEFAULT_OPTIONS = dict(
-    # Use 'lib' instead of default 'lib64' on x86_64 to match Bazel output dirs
+    # NOTE:
+    # PG docs say libdir defaults to `PREFIX/lib` but the Meson build uses
+    # get_option('libdir') and the Meson docs say "libdir is automatically
+    # detected based on your platform". Testing on Debian amd64, libdir
+    # defaults to lib64 while on arm64 is lib, so we need to pin it to lib
+    # to ensure the libdir path is always the same across all platforms:
     libdir = "lib",
     rpath = "false",
     system_tzdata = "/usr/share/zoneinfo",

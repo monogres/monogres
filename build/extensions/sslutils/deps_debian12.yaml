@@ -10,4 +10,7 @@ archs:
   - amd64
   - arm64
 packages:
+  # buildtime
   - libssl-dev
+  # runtime
+  - libssl3
