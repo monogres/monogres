@@ -63,10 +63,18 @@ ifneq ($(USE_CACHE),false)
 define CACHE_SETUP_SCRIPT
 set -x \
 	&& mkdir -p bazel-cache \
-	&& cp -a /$(USERNAME)/.cache/. bazel-cache/.
+	&& cp -a /$(USERNAME)/.cache/. bazel-cache/. \
+	&& touch bash_history \
+	&& chown -R "$(USERNAME)" bash_history \
+	&& touch bazelrc \
+	&& chown -R "$(USERNAME)" bazelrc
 endef
 
-CACHE_PARAMETER := --mount type=volume,src=bazel-cache,dst=/$(USERNAME)/.cache,volume-subpath=bazel-cache
+define CACHE_PARAMETER
+--mount type=volume,src=bazel-cache,dst=/$(USERNAME)/.cache,volume-subpath=bazel-cache \
+--mount type=volume,src=bazel-cache,dst=/$(USERNAME)/.bash_history,volume-subpath=bash_history \
+--mount type=volume,src=bazel-cache,dst=/$(USERNAME)/.bazelrc,volume-subpath=bazelrc
+endef
 else
 CACHE_PARAMETER :=
 endif
@@ -99,6 +107,7 @@ endif
 		--group-add root \
 		--volume "$(REPO)":/src/repo:ro \
 		--volume "$(REPO)":/src/workspace:rw \
+		--volume "$(REPO)/../.git":/src/.git:ro \
 		$(CACHE_PARAMETER) \
 		--workdir /src/workspace \
 		--entrypoint /bin/bash \
