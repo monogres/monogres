@@ -251,15 +251,18 @@ def pgxs_build(name, pgxs_src, deps_buildtime, pg_version, debug = False):
         INSTALLDIR="$$EXT_BUILD_ROOT/$$(basename "$$TAR_FILE" .tar)"
 
         PGXS_INSTALLDIR="$$(make_pgxs_installdir "$$INSTALLDIR")"
+        RELOCATED_PGXS_INSTALLDIR="$$EXT_BUILD_ROOT/relocated"
 
         CC="$$EXT_BUILD_ROOT/$(CC)"
 
         export LOG_FILE
 
         {{
-            setup_deps_buildtime "$$DEPS_BUILDTIME_PATH" "$${{DEPS_BUILDTIME[@]}}"
+            setup_dependencies "$$DEPS_BUILDTIME_PATH" "$${{DEPS_BUILDTIME[@]}}"
             compile_extension "$$CC" "$$PGXS_SRC" "$$DEPS_BUILDTIME_PATH" "$$INSTALLDIR" 2>&1
-            tar_ "$$TAR_FILE" --directory "$$PGXS_INSTALLDIR" .
+            mkdir -p "$$RELOCATED_PGXS_INSTALLDIR/postgres/{pg_version}"
+            mv -t "$$RELOCATED_PGXS_INSTALLDIR/postgres/{pg_version}/." "$$PGXS_INSTALLDIR"/*
+            tar_ "$$TAR_FILE" --directory "$$RELOCATED_PGXS_INSTALLDIR" .
         }} >> "$$LOG_FILE"
         """.format(
             tar_cmd = "$(BSDTAR_BIN)",
@@ -275,6 +278,7 @@ def pgxs_build(name, pgxs_src, deps_buildtime, pg_version, debug = False):
             ]),
             tar_file = "$(locations %s)" % tar_file,
             log_file = "$(locations %s)" % log_file,
+            pg_version = pg_version.version,
             pgxs_src = "$(locations %s)" % pgxs_src,
             deps_buildtime = " ".join([
                 "$(locations %s)" % dep_buildtime
